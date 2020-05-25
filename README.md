@@ -1,7 +1,9 @@
 # PMS
 Personnel Management System Cloud Application for the Lecture Cloud Application Development.
 
-
+## Cloning Project
+* `git clone git@github.com:JaromirCharles/PMS.git`
+* execute `npm install` within the frontend folder then `npm start`
 
 ## Development System
 
@@ -33,9 +35,9 @@ Development is done using `Visual Studio Code` and `Firefox`.
 
 ## Application Setup 
 
-* `React Router Dom` is used to route through the different pages. Install with `npm install react-router-dom`.
-* `Material-UI` is used to design the system. Install Material-UI's source files with `npm install @material-ui/core`.
-  * `Material-UI` offers over 1000+ icons. Install with `npm install @material-ui/icons`
+* `React Router Dom` is used to route through the different pages. Install with `npm install --save react-router-dom`.
+* `Material-UI` is used to design the system. Install Material-UI's source files with `npm install --save @material-ui/core`.
+  * `Material-UI` offers over 1000+ icons. Install with `npm install --save @material-ui/icons`
 
 * [bootstrap](https://getbootstrap.com/docs/4.0/getting-started/introduction/). 
 
