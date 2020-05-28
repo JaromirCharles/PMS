@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.com/JaromirCharles/PMS.svg?token=hAqcc48iGSUheLvmXpJx&branch=dev)](https://travis-ci.com/JaromirCharles/PMS)
+
 # PMS
 Personnel Management System Cloud Application for the Lecture Cloud Application Development.
 

@@ -4,3 +4,5 @@ node_js:
 git:
   quiet: true
 cache: npm
+script:
+  - npm run build
