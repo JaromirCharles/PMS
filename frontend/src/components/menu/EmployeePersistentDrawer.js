@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import clsx from "clsx";
 import { makeStyles, useTheme } from "@material-ui/core/styles";
 import Drawer from "@material-ui/core/Drawer";
@@ -22,6 +22,7 @@ import AccountBoxIcon from "@material-ui/icons/AccountBox";
 //import EmployeeTable from '../employee/EmployeeTable';
 import { Tooltip } from "@material-ui/core";
 import { Redirect } from "react-router-dom";
+import EmployeeView from '../employee/EmployeeView'
 
 const drawerWidth = 240;
 
@@ -89,9 +90,14 @@ const useStyles = makeStyles((theme) => ({
 function EmployeePersistentDrawer() {
   const classes = useStyles();
   const theme = useTheme();
-  const [open, setOpen] = React.useState(true); // set drawer to be open as default
-  const [currentMenu, setCurrentMenu] = React.useState("Available Jobs");
-  const [logout, setLogout] = React.useState(false);
+  const [open, setOpen] = useState(true); // set drawer to be open as default
+  const [currentMenu, setCurrentMenu] = useState("Available Jobs");
+  const [logout, setLogout] = useState(false);
+
+  useEffect(() => {
+    console.log("ComponentDidMount")
+  })
+
 
   const handleDrawerOpen = () => {
     setOpen(true);
@@ -137,7 +143,7 @@ function EmployeePersistentDrawer() {
               Company Name
             </Typography>
 
-            <Tooltip title="Logout" arrow>
+            <Tooltip>
               <IconButton onClick={() => onLogout()}>
                 <ExitToAppTwoToneIcon fontSize="large" />
               </IconButton>
@@ -162,8 +168,8 @@ function EmployeePersistentDrawer() {
               {theme.direction === "ltr" ? (
                 <ChevronLeftIcon />
               ) : (
-                <ChevronRightIcon />
-              )}
+                  <ChevronRightIcon />
+                )}
             </IconButton>
           </div>
 
@@ -231,7 +237,7 @@ function EmployeePersistentDrawer() {
             {currentMenu}
           </Typography>
           {/* call rest of body put table */}
-          {/*<EmployeeTable/>*/}
+          <EmployeeView currentView={currentMenu} />
         </main>
       </div>
     );

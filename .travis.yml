@@ -4,5 +4,7 @@ node_js:
 git:
   quiet: true
 cache: npm
+# before_script: cd frontend
 script:
+  - cd frontend
   - npm run build
