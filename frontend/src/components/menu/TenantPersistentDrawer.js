@@ -18,13 +18,10 @@ import ListItemText from "@material-ui/core/ListItemText";
 import EventAvailableIcon from "@material-ui/icons/EventAvailable";
 import ExitToAppTwoToneIcon from "@material-ui/icons/ExitToAppTwoTone";
 import AccountBoxIcon from "@material-ui/icons/AccountBox";
-//import EmployeeTable from '../employee/EmployeeTable';
 import { Tooltip } from "@material-ui/core";
 import { Redirect } from "react-router-dom";
-import DeleteIcon from "@material-ui/icons/Delete";
-import Button from "@material-ui/core/Button";
-import EditIcon from "@material-ui/icons/Edit";
-import AddIcon from "@material-ui/icons/Add";
+
+import TenantView from '../tenant/TenantView'
 
 const drawerWidth = 240;
 
@@ -168,8 +165,8 @@ function TenantPersistentDrawer() {
               {theme.direction === "ltr" ? (
                 <ChevronLeftIcon />
               ) : (
-                <ChevronRightIcon />
-              )}
+                  <ChevronRightIcon />
+                )}
             </IconButton>
           </div>
 
@@ -199,38 +196,10 @@ function TenantPersistentDrawer() {
           <Typography variant="subtitle1" paragraph>
             {currentMenu}
           </Typography>
-          <Fragment>
-            <Button
-              className={classes.buttons}
-              variant="contained"
-              color="primary"
-              size="small"
-              startIcon={<AddIcon />}
-            >
-              Create Job
-            </Button>
-            <Button
-              className={classes.buttons}
-              variant="contained"
-              color="secondary"
-              size="small"
-              startIcon={<DeleteIcon />}
-            >
-              Delete
-            </Button>
-            <Button
-              className={classes.buttons}
-              variant="contained"
-              color="default"
-              size="small"
-              startIcon={<EditIcon color="inherit" />}
-            >
-              Edit
-            </Button>
-          </Fragment>
+
 
           {/* call rest of body put table */}
-          {/*<EmployeeTable/>*/}
+          <TenantView />
         </main>
       </div>
     );
