@@ -1,4 +1,4 @@
-import React, { Fragment } from "react";
+import React, { useState } from "react";
 import clsx from "clsx";
 import { makeStyles, useTheme } from "@material-ui/core/styles";
 import Drawer from "@material-ui/core/Drawer";
@@ -13,15 +13,13 @@ import MenuIcon from "@material-ui/icons/Menu";
 import ChevronLeftIcon from "@material-ui/icons/ChevronLeft";
 import ChevronRightIcon from "@material-ui/icons/ChevronRight";
 import ListItem from "@material-ui/core/ListItem";
-import ListItemIcon from "@material-ui/core/ListItemIcon";
 import ListItemText from "@material-ui/core/ListItemText";
-import EventAvailableIcon from "@material-ui/icons/EventAvailable";
 import ExitToAppTwoToneIcon from "@material-ui/icons/ExitToAppTwoTone";
 import AccountBoxIcon from "@material-ui/icons/AccountBox";
 import { Tooltip } from "@material-ui/core";
 import { Redirect } from "react-router-dom";
-
 import TenantView from '../tenant/TenantView'
+import CreateJobView from "../tenant/CreateJobView";
 
 const drawerWidth = 240;
 
@@ -92,9 +90,10 @@ const useStyles = makeStyles((theme) => ({
 function TenantPersistentDrawer() {
   const classes = useStyles();
   const theme = useTheme();
-  const [open, setOpen] = React.useState(true); // set drawer to be open as default
-  const [currentMenu, setCurrentMenu] = React.useState("Jobs in System");
-  const [logout, setLogout] = React.useState(false);
+  const [open, setOpen] = useState(true); // set drawer to be open as default
+  const [currentMenu, setCurrentMenu] = useState("Jobs in System");
+  const [logout, setLogout] = useState(false);
+  const [createJob, setCreateJob] = useState(false)
 
   const handleDrawerOpen = () => {
     setOpen(true);
@@ -106,6 +105,7 @@ function TenantPersistentDrawer() {
 
   const handleClick = (from) => {
     console.log("Clicked Menu Item: " + from);
+    setCreateJob(false)
     setCurrentMenu(from);
   };
 
@@ -114,8 +114,19 @@ function TenantPersistentDrawer() {
     setLogout(true);
   };
 
+  const createJobCallback = (value) => {
+    console.log("Received from child", value)
+    setCurrentMenu("")
+    setCreateJob(value)
+  }
+
+  const cancelCreateJobCallback = (value) => {
+    setCurrentMenu("Jobs in System")
+    setCreateJob(false)
+  }
+
   if (logout) {
-    return <Redirect to="/" />;
+    return <Redirect to="/"/>;
   } else {
     return (
       <div className={classes.root}>
@@ -179,14 +190,15 @@ function TenantPersistentDrawer() {
               key={"Jobs in System"}
               onClick={() => handleClick("Jobs in System")}
             >
-              <ListItemIcon>
+              {/* <ListItemIcon>
                 <EventAvailableIcon fontSize="small" />
-              </ListItemIcon>
+              </ListItemIcon> */}
               <ListItemText primary={"Jobs in System"} />
             </ListItem>
           </List>
         </Drawer>{" "}
         {/* end of drawer */}
+        
         <main
           className={clsx(classes.content, {
             [classes.contentShift]: open,
@@ -197,10 +209,10 @@ function TenantPersistentDrawer() {
             {currentMenu}
           </Typography>
 
-
-          {/* call rest of body put table */}
-          <TenantView />
+          {createJob ? <CreateJobView parentCancelCallback={cancelCreateJobCallback}/> : 
+          <TenantView parentCreateJobCallback={createJobCallback}/>}
         </main>
+      
       </div>
     );
   }
