@@ -22,7 +22,7 @@ The projects User Interface is build with React. The frontend folder has created
 :~/PMS$ npx create-react-app frontend
 ```
 
-To start the application, run `npm start` which launches the application on `http://localhost:8080`.
+To start the application, run `npm start` which launches the application on `http://localhost:8080`. Currently a default username `admin` and password `admin` can be used to accept the system.
 
 Development is done using `Visual Studio Code` and `Firefox`.
 
@@ -30,6 +30,7 @@ Development is done using `Visual Studio Code` and `Firefox`.
   * Provides useful React extensions
     * [Prettier](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode) Code formatter using prettier
     * [JavaScript (ES6) code snippets](https://marketplace.visualstudio.com/items?itemName=xabikos.JavaScriptSnippets) Code snippets for JavaScript in ES6 syntax
+    * [ES7 React/Redux/GraphQL/React-Native snippets](https://marketplace.visualstudio.com/items?itemName=dsznajder.es7-react-js-snippets) Simple extensions for React, Redux and Graphql in JS/TS with ES7 syntax
 * Firefox
   * The [React Developer Tools](https://addons.mozilla.org/en-US/firefox/addon/react-devtools/) have been downloaded for a better development experience.
 
