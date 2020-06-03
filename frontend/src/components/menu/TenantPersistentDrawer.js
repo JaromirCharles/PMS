@@ -18,8 +18,12 @@ import ExitToAppTwoToneIcon from "@material-ui/icons/ExitToAppTwoTone";
 import AccountBoxIcon from "@material-ui/icons/AccountBox";
 import { Tooltip } from "@material-ui/core";
 import { Redirect } from "react-router-dom";
-import TenantView from '../tenant/TenantView'
+import TenantView from "../tenant/TenantView";
 import CreateJobView from "../tenant/CreateJobView";
+import PeopleAltIcon from '@material-ui/icons/PeopleAlt';
+import { ListItemIcon } from '@material-ui/core';
+import WorkIcon from '@material-ui/icons/Work';
+import TenantEmployeesView from "../tenant/TenantEmployeesView"
 
 const drawerWidth = 240;
 
@@ -93,7 +97,9 @@ function TenantPersistentDrawer() {
   const [open, setOpen] = useState(true); // set drawer to be open as default
   const [currentMenu, setCurrentMenu] = useState("Jobs in System");
   const [logout, setLogout] = useState(false);
-  const [createJob, setCreateJob] = useState(false)
+  const [jobsView, setJobsView] = useState(true);
+  const [createJob, setCreateJob] = useState(false);
+  const [employeeView, setEmployeeView] = useState(false);
 
   const handleDrawerOpen = () => {
     setOpen(true);
@@ -105,28 +111,37 @@ function TenantPersistentDrawer() {
 
   const handleClick = (from) => {
     console.log("Clicked Menu Item: " + from);
+    setJobsView(true)
     setCreateJob(false)
-    setCurrentMenu(from);
+    setEmployeeView(false)
+    setCurrentMenu(from)
   };
 
   const onLogout = () => {
     console.log("Clicked Logout");
-    setLogout(true);
+    setLogout(true)
   };
 
   const createJobCallback = (value) => {
-    console.log("Received from child", value)
-    setCurrentMenu("")
-    setCreateJob(value)
-  }
+    console.log("Received from child", value);
+    setCurrentMenu("");
+    setCreateJob(value);
+  };
 
   const cancelCreateJobCallback = (value) => {
-    setCurrentMenu("Jobs in System")
-    setCreateJob(false)
+    setCurrentMenu("Jobs in System");
+    setCreateJob(false);
+  };
+
+  const employeesClick = () => {
+    console.log("clicked employees")
+    setCurrentMenu("");
+    setJobsView(false)
+    setEmployeeView(true)
   }
 
   if (logout) {
-    return <Redirect to="/"/>;
+    return <Redirect to="/" />;
   } else {
     return (
       <div className={classes.root}>
@@ -176,8 +191,8 @@ function TenantPersistentDrawer() {
               {theme.direction === "ltr" ? (
                 <ChevronLeftIcon />
               ) : (
-                  <ChevronRightIcon />
-                )}
+                <ChevronRightIcon />
+              )}
             </IconButton>
           </div>
 
@@ -190,15 +205,26 @@ function TenantPersistentDrawer() {
               key={"Jobs in System"}
               onClick={() => handleClick("Jobs in System")}
             >
-              {/* <ListItemIcon>
-                <EventAvailableIcon fontSize="small" />
-              </ListItemIcon> */}
+              <ListItemIcon>
+                <WorkIcon fontSize="small" />
+              </ListItemIcon>
               <ListItemText primary={"Jobs in System"} />
+            </ListItem>
+
+            <ListItem
+              button
+              autoFocus={false}
+              key={"Employees"}
+              onClick={() => employeesClick()}
+            >
+              <ListItemIcon>
+                <PeopleAltIcon fontSize="small" />
+              </ListItemIcon>
+              <ListItemText primary={"Employees"} />
             </ListItem>
           </List>
         </Drawer>{" "}
         {/* end of drawer */}
-        
         <main
           className={clsx(classes.content, {
             [classes.contentShift]: open,
@@ -209,10 +235,15 @@ function TenantPersistentDrawer() {
             {currentMenu}
           </Typography>
 
-          {createJob ? <CreateJobView parentCancelCallback={cancelCreateJobCallback}/> : 
-          <TenantView parentCreateJobCallback={createJobCallback}/>}
+          {jobsView ? <TenantView parentCreateJobCallback={createJobCallback} />: null}
+          {createJob ? <CreateJobView parentCancelCallback={cancelCreateJobCallback} />: null}
+          {employeeView? <TenantEmployeesView/>: null}
+          {/* {createJob ? (
+            <CreateJobView parentCancelCallback={cancelCreateJobCallback} />
+          ) : (
+            <TenantView parentCreateJobCallback={createJobCallback} />
+          )} */}
         </main>
-      
       </div>
     );
   }
