@@ -5,7 +5,8 @@ Personnel Management System Cloud Application for the Lecture Cloud Application 
 
 ## Cloning Project
 * `git clone git@github.com:JaromirCharles/PMS.git`
-* execute `npm install` within the frontend folder then `npm start`
+* execute `yarn dev` within root folder
+  * If yarn dev indicates missing modules, execute `npm install` within the frontend folder then `npm start`
 
 ## Development System
 
@@ -22,7 +23,9 @@ The projects User Interface is build with React. The frontend folder has created
 :~/PMS$ npx create-react-app frontend
 ```
 
-To start the application, run `npm start` which launches the application on `http://localhost:8080`. Currently a default username `admin` and password `admin` can be used to accept the system.
+The project has a node express server as its backend serving all REST API requests.
+
+To start the application, run `yarn dev` which launches the application on `http://localhost:8080`. Currently a default username `admin` and password `admin` can be used to accept the system.
 
 Development is done using `Visual Studio Code` and `Firefox`.
 
@@ -45,3 +48,13 @@ Development is done using `Visual Studio Code` and `Firefox`.
 * [bootstrap](https://getbootstrap.com/docs/4.0/getting-started/introduction/). 
 
 * `axios` promised based HTTP client to interact with the REST API. Install with `npm install --save axios`
+
+* Express is an opinionated NodeJS framework for web-applications. It provides the building blocks you'll need to setup a web-server capable of receiving and responding to HTTP requests.
+
+* React is a JS library for building user interfaces. It doesn't handle HTTP requests at all.
+
+* React Router is a library for react which provides declarative routing for the interface.
+
+* send emails with [Nodemailer](https://nodemailer.com/about/)
+  * install the node mailer module using npm `npm install nodemailer`
+  * [mailtrap](https://mailtrap.io/) Safe Email Testing for Staging & Development
