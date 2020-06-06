@@ -95,6 +95,25 @@ export default function TenantEmployeesView(props) {
     console.log(`email after add: ${email}`);
   };
 
+  const onClickInvite = async () => {
+    /* console.log("onClickInvite")
+    const response = await fetch('/api/hello')
+    const body = await response.json();
+    if (response.status != 200) throw Error(body.message) */
+    console.log("emails in list", emailList)
+
+    const response = await fetch('/api/world', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email: { emailList } }),
+    });
+    const body = await response.text();
+    if (response.status != 200) throw Error(body.message)
+    console.log(body)
+  }
+
   return (
     <div>
       <div>
@@ -142,10 +161,11 @@ export default function TenantEmployeesView(props) {
             variant="contained"
             size="small"
             color="primary"
+            onClick={() => onClickInvite()}
           >
             Invite
           </Button>
-              </div >
+              </div>
               <Divider style={{height: "10px"}}/>
               <Divider variant style={{height: "10px", opacity: 0.}}/>
       </div>
