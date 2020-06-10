@@ -18,7 +18,7 @@ function LoginForm(props) {
   const [redirect, setRedirect] = React.useState(false);
   const [tabValue, setTabValue] = React.useState(0);
   const [state, setState] = useState({
-    username: "",
+    email: "",
     password: "",
   });
 
@@ -30,14 +30,32 @@ function LoginForm(props) {
     }));
   };
 
-  const handleSubmitClick = (e) => {
+  const handleSubmitClick = async (e) => {
     e.preventDefault();
-    if (state.username === "admin" && state.password === "admin") {
+    if (state.email === "admin" && state.password === "admin") {
       console.log("Success");
       setRedirect(true);
       return <Redirect to="/employee" />;
     } else {
       console.log("Wrong username or password");
+    }
+    // check database for valid email and password
+    const response = await fetch("/api/validateLogin", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ login: { state } }),
+    });
+    const body = await response.text();
+    if (response.status !== 200) throw Error(body.message);
+    console.log("body: ", body)
+    if (body === "true") {
+      console.log("setting to true")
+      setRedirect(true)
+    } else {
+      console.log("setting to false")
+      setRedirect(false)
     }
   };
 
@@ -73,14 +91,14 @@ function LoginForm(props) {
             </Tabs>
           </Paper>
           <div className="form-group text-left">
-            <label htmlFor="exampleInputEmail1">Username</label>
+            <label htmlFor="exampleInputEmail1">Email</label>
 
             <input
-              type="username"
+              type="email"
               className="form-control"
-              id="username"
-              aria-describedby="usernameHelp"
-              placeholder="Enter username"
+              id="email"
+              aria-describedby="emailHelp"
+              placeholder="Enter email"
               value={state.username}
               onChange={handleChange}
             />

@@ -1,13 +1,9 @@
 import React from 'react'
-import { makeStyles, useTheme } from "@material-ui/core/styles";
-import PropTypes from 'prop-types';
+import { makeStyles } from "@material-ui/core/styles";
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
-import CssBaseline from '@material-ui/core/CssBaseline';
-import useScrollTrigger from '@material-ui/core/useScrollTrigger';
 import IconButton from '@material-ui/core/IconButton';
-import MenuIcon from '@material-ui/icons/Menu';
 import CancelOutlinedIcon from '@material-ui/icons/CancelOutlined';
 
 const useStyles = makeStyles((theme) => ({

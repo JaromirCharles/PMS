@@ -2,6 +2,7 @@ import React, { useState } from "react";
 
 function RegistrationForm(props) {
   const [state, setState] = useState({
+    name: "",
     email: "",
     password: "",
   });
@@ -14,22 +15,37 @@ function RegistrationForm(props) {
     }));
   };
 
-  const handleSubmitClick = (e) => {
+  const handleSubmitClick = async (e) => {
+    console.log("Submitting: ", state);
     e.preventDefault();
-    if (state.password === state.confirmPassword) {
-      console.log("Passwords match");
-      //sendDetailsToServer()
-    } else {
-      props.showError("Passwords do not match");
-    }
+    //sendDetailsToServer()
+    const response = await fetch("/api/register", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ tenant: { state } }),
+    });
+    const body = await response.text();
+    if (response.status !== 200) throw Error(body.message)
   };
 
   return (
     <div className="card col-12 col-lg-4 login-card mt-2 ml-4 mb-4 hv-center">
       <form>
         <div className="form-group text-left">
+          <label htmlFor="exampleInputName">Company's Name</label>
+          <input
+            type="text"
+            className="form-control"
+            id="name"
+            placeholder="Company's name"
+            value={state.name}
+            onChange={handleChange}
+          />
+        </div>
+        <div className="form-group text-left">
           <label htmlFor="exampleInputEmail1">Email address</label>
-
           <input
             type="email"
             className="form-control"

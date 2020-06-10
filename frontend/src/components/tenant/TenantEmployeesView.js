@@ -1,25 +1,12 @@
 import React, { useState, useEffect } from "react";
 import {
-  makeStyles,
-  CardContent,
-  CardActions,
-  IconButton,
-  Collapse,
-  TableHead,
-  TableRow,
-  TableCell,
+  makeStyles
 } from "@material-ui/core";
-import clsx from 'clsx';
-
-import PropTypes from 'prop-types';
 import { Typography } from "@material-ui/core";
 import TextField from "@material-ui/core/TextField";
 import AddCircleIcon from "@material-ui/icons/AddCircle";
 import Button from "@material-ui/core/Button";
 import { Divider } from "@material-ui/core";
-import Card from "@material-ui/core/Card";
-
-import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import TenantEmployeesTable from "./TenantEmployeesTable";
 
 const useStyles = makeStyles((theme) => ({
@@ -72,9 +59,6 @@ export default function TenantEmployeesView(props) {
     };
   }, []);
     
-  const handleExpandClick = () => {
-    setExpanded(!expanded);
-  };
 
   function createEmployeeList() {
     const list = [
@@ -102,7 +86,7 @@ export default function TenantEmployeesView(props) {
     if (response.status != 200) throw Error(body.message) */
     console.log("emails in list", emailList)
 
-    const response = await fetch('/api/world', {
+    const response = await fetch('/api/invitation', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -110,7 +94,7 @@ export default function TenantEmployeesView(props) {
       body: JSON.stringify({ email: { emailList } }),
     });
     const body = await response.text();
-    if (response.status != 200) throw Error(body.message)
+    if (response.status !== 200) throw Error(body.message) 
     console.log(body)
   }
 
@@ -133,7 +117,6 @@ export default function TenantEmployeesView(props) {
             }}
             size="small"
             type="email"
-            autoComplete={false}
             onChange={(event) => {
               const { value } = event.target;
               setEmail(value);
@@ -167,7 +150,7 @@ export default function TenantEmployeesView(props) {
           </Button>
               </div>
               <Divider style={{height: "10px"}}/>
-              <Divider variant style={{height: "10px", opacity: 0.}}/>
+              <Divider style={{height: "10px", opacity: 0.}}/>
       </div>
       <div>
        <TenantEmployeesTable/>
