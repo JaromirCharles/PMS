@@ -6,6 +6,4 @@ git:
 cache: npm
 # before_script: cd frontend
 script:
-  - cd frontend
-  - npm install
-  - npm run build
+  - yarn test
