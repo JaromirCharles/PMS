@@ -6,4 +6,5 @@ git:
 cache: npm
 # before_script: cd frontend
 script:
+  - yarn install
   - yarn test
