@@ -23,11 +23,14 @@ function registerEmployee(employee) {
 
   db.collection("tenants")
     .doc(employee.employee.tenant)
-      .update({employees: admin.firestore.FieldValue.arrayUnion(employee.employee.email)});
+    .update({
+      employees: admin.firestore.FieldValue.arrayUnion(employee.employee.email),
+    });
 }
 
 async function checkCredentials(credentials) {
   var validate = false;
+  var companyName = "";
   console.log("in test");
   let credRef = db.collection("tenants");
   let query = await credRef
@@ -45,6 +48,7 @@ async function checkCredentials(credentials) {
           doc.data().password === credentials.password
         ) {
           validate = true;
+          companyName = doc.data().name;
         } else {
           validate = false;
         }
@@ -53,7 +57,65 @@ async function checkCredentials(credentials) {
     .catch((err) => {
       console.log("Error getting documents", err);
     });
-  return validate;
+  return { validate, companyName };
 }
 
-module.exports = { registerTenant, checkCredentials, registerEmployee };
+async function getTenantJobs(companyName) {
+  var jobs = [];
+  console.log("getting jobs for: ", companyName);
+  let query = await db
+    .collection("tenants")
+    .doc(companyName)
+    .collection("jobs")
+    .get()
+    .then((snapshot) => {
+      if (snapshot.empty) {
+        console.log("getTenantJobs: No matching documents");
+        return;
+      }
+      snapshot.forEach((job) => {
+        //console.log(job.id, "=>", job.data());
+        jobs.push({ ...job.data(), id: job.id });
+      });
+    })
+    .catch((err) => {
+      console.log("getTenantJobs: Error getting documents", err);
+    });
+  //console.log("collection Info: ", jobs);
+  return jobs;
+}
+
+async function createNewJob(job) {
+  var retVal = "failed";
+  console.log(job);
+  //db.collection("tenants").doc(job.tenant.companyName).set(tenantUpdate);
+  db.collection("tenants")
+    .doc(job.tenant.companyName)
+    //.doc("test")
+    .collection("jobs")
+    .doc()
+    .set(job.newJob);
+  console.log(job);
+  return retVal;
+}
+
+async function deleteJobs(jobs) {
+  console.log(jobs.deleteJobList.deleteJobList);
+  jobs.deleteJobList.deleteJobList.forEach((job) => {
+    console.log(job);
+    db.collection("tenants")
+      .doc(jobs.deleteJobList.tenant.companyName)
+      .collection("jobs")
+      .doc(job)
+      .delete();
+  });
+}
+
+module.exports = {
+  registerTenant,
+  checkCredentials,
+  registerEmployee,
+  getTenantJobs,
+  createNewJob,
+  deleteJobs,
+};

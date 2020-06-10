@@ -45,14 +45,35 @@ app.post("/api/register", (req, res) => {
 });
 
 app.post("/api/validateLogin", async (req, res) => {
-  const validate = await firestore.checkCredentials(req.body.login.state);
-  res.send(validate);
+  const { validate, companyName } = await firestore.checkCredentials(req.body.login.state);
+  console.log("server.js companyName: ", companyName)
+  res.send({ validate, companyName });
 });
 
 app.post("/api/register_employee", async (req, res) => {
-  console.log("received: ", req.body)
   await firestore.registerEmployee(req.body.employee);
   res.send("registered employee")
+});
+
+app.post('/api/tenant_jobs', async function (req, res) {
+  const jobs = await firestore.getTenantJobs(req.body.tenant.companyName)
+  res.send(jobs);
+});
+
+app.post('/api/tenant/create_job', async function (req, res) {
+  //console.log("/api/tenant/create_job: ", req.body.newJob)
+  const retVal = await firestore.createNewJob(req.body.newJob)
+  res.send(retVal)
+});
+
+/**
+ * Deletes a list of jobs.
+ * @param {req.body} the list of jobs to delete
+ * @return {retVal} String signaling if all jobs have been deleted.
+ */
+app.post('/api/tenant/delete_jobs', async function (req, res) {
+  const retVal = await firestore.deleteJobs(req.body);
+  res.send("ok")
 });
 
 // console.log that the server is up and running

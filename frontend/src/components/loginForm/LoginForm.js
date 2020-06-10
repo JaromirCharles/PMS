@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Redirect } from "react-router-dom";
+import { Redirect, Link } from "react-router-dom";
 import Tabs from "@material-ui/core/Tabs";
 import Tab from "@material-ui/core/Tab";
 import { makeStyles } from "@material-ui/core/styles";
@@ -21,6 +21,7 @@ function LoginForm(props) {
     email: "",
     password: "",
   });
+  const [companyName, setCompanyName] = React.useState("");
 
   const handleChange = (e) => {
     const { id, value } = e.target;
@@ -39,7 +40,7 @@ function LoginForm(props) {
     } else {
       console.log("Wrong username or password");
     }
-    // check database for valid email and password
+    // check database for valid email and password and return company name
     const response = await fetch("/api/validateLogin", {
       method: "POST",
       headers: {
@@ -47,10 +48,11 @@ function LoginForm(props) {
       },
       body: JSON.stringify({ login: { state } }),
     });
-    const body = await response.text();
+    const body = await response.json();
     if (response.status !== 200) throw Error(body.message);
-    console.log("body: ", body)
-    if (body === "true") {
+    console.log("body: ", body.validate)
+    if (body.validate === true) {
+      setCompanyName(body.companyName)
       console.log("setting to true")
       setRedirect(true)
     } else {
@@ -65,7 +67,7 @@ function LoginForm(props) {
 
   if (redirect) {
     if (tabValue === 0) {
-      return <Redirect to="/tenant" />;
+      return <Redirect component={Link} to={`/${companyName}/jobs`} />;
     } else {
       return <Redirect to="/employee" />;
     }
@@ -119,6 +121,7 @@ function LoginForm(props) {
           <button
             type="submit"
             className="btn btn-primary"
+            component={Link} to="/tenant"
             onClick={handleSubmitClick}
           >
             Login

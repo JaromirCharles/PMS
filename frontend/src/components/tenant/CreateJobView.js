@@ -30,7 +30,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function CreateJobView({ parentCancelCallback }) {
+export default function CreateJobView({ companyName, parentCancelCallback }) {
   const classes = useStyles();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -43,16 +43,35 @@ export default function CreateJobView({ parentCancelCallback }) {
     parentCancelCallback(true);
   };
 
-  const onClickSave = () => {
+  const onClickSave = async () => {
     console.log(`Title: ${title}\n
       Description: ${description}\n
       Location: ${location}\n
       Start & End Time: ${startAndEndTime}\n
       # Workers: ${nrWorkers}`);
+
+    const newJob = {
+      title: title,
+      description: description,
+      location: location,
+      startAndEndTime: startAndEndTime,
+      nrWorkersNeeded: nrWorkers,
+    };
+
+    // call to api to persist new job to firebase firestore
+    const response = await fetch("/api/tenant/create_job", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ newJob: { newJob, tenant: { companyName } } }),
+    });
+    const body = await response.text();
+    if (response.status !== 200) throw Error(body.message);
   };
 
   const isDisabled = () => {
-    return !(title || description || location || startAndEndTime || nrWorkers);
+    return !(title && description && location && startAndEndTime && nrWorkers);
   };
 
   return (
@@ -142,6 +161,7 @@ export default function CreateJobView({ parentCancelCallback }) {
             label="# Workers"
             type="number"
             margin="normal"
+            defaultValue={nrWorkers}
             InputLabelProps={{
               shrink: true,
             }}
@@ -149,7 +169,7 @@ export default function CreateJobView({ parentCancelCallback }) {
             size="small"
             onChange={(event) => {
               const { value } = event.target;
-              setNrWorkers(value);
+              setNrWorkers(value)
             }}
           />
           <br></br>

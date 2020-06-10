@@ -66,27 +66,37 @@ const columns = [
   { id: "members", label: "Members" },
 ];
 
-export default function TenantView({ parentCreateJobCallback }) {
+export default function TenantView({ companyName, parentCreateJobCallback }) {
   const [tableData, setTableData] = useState([]);
   const classes = useStyles();
   const [deleteJobList, updateDeleteJobList] = useState([]);
+  const [jobs, setJobs] = useState([]);
 
   useEffect(() => {
-    console.log("componentDidMount");
-    // retrieve data from database
-    /* async function fetchData() {
-          const result = await axios.get('http://...')
-          rows = createData()
-          setTableData(rows)
-        }
-        fetchData(); */
-    var rows = createEmployeeData();
-    setTableData(rows);
+    console.log("componentDidMount with name: ", companyName);
+    // retrieve company's jobs from firebase firestore
+    fetchJobs();
 
-    createEmployeeData();
+    /* var rows = createEmployeeData();
+    setTableData(rows);
+    createEmployeeData(); */
   }, []);
 
+  const fetchJobs = async () => {
+    const data = await fetch("/api/tenant_jobs", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ tenant: { companyName } }),
+    });
+    const retJobs = await data.json();
+    console.log(retJobs);
+    setJobs(retJobs);
+  };
+
   function createEmployeeData() {
+    console.log(jobs.size);
     const rows = [
       createData(
         "Rammstein",
@@ -122,7 +132,6 @@ export default function TenantView({ parentCreateJobCallback }) {
   };
 
   const onCreateJob = () => {
-    //setShowCreateJobPopup(true)
     parentCreateJobCallback(true);
   };
 
@@ -134,17 +143,26 @@ export default function TenantView({ parentCreateJobCallback }) {
   const removeJobFromDeleteList = (jobToDelete) => {
     console.log("removing job from list: ", jobToDelete);
     let toDelete = jobToDelete;
-    updateDeleteJobList(
-      deleteJobList.filter((jobToDelete) => jobToDelete !== toDelete)
-    );
+    updateDeleteJobList(deleteJobList.filter((job) => job !== jobToDelete));
   };
 
   const deleteJobListEmpty = () => {
     return !deleteJobList.length > 0;
   };
 
-  const deleteJobs = () => {
-    console.log("Deleting jobs: ", deleteJobList);
+  const deleteJobs = async () => {
+    console.log("Deleting jobs with id: ", deleteJobList);
+    const response = await fetch("/api/tenant/delete_jobs", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        deleteJobList: { deleteJobList, tenant: { companyName } },
+      }),
+    });
+    const body = await response.text();
+    //    if (response.status !== 200) throw Error(body.message);
   };
 
   return (
@@ -193,7 +211,7 @@ export default function TenantView({ parentCreateJobCallback }) {
               ))}
             </TableRow>
           </TableHead>
-          <TableBody>
+          {/* <TableBody>
             {tableData.map((row) => (
               <StyledTableRow key={row.jobTitle}>
                 <Checkbox
@@ -218,6 +236,34 @@ export default function TenantView({ parentCreateJobCallback }) {
                 <StyledTableCell>{row.startAndEndTime}</StyledTableCell>
 
                 <StyledTableCell>{row.empty}</StyledTableCell>
+              </StyledTableRow>
+            ))}
+          </TableBody> */}
+          <TableBody>
+            {jobs.map((row) => (
+              <StyledTableRow key={row.id}>
+                <Checkbox
+                  inputProps={{ "aria-label": "uncontrolled-checkbox" }}
+                  size="small"
+                  onChange={(event) => {
+                    event.target.checked
+                      ? addJobToDeleteList(row.id)
+                      : removeJobFromDeleteList(row.id);
+                  }}
+                />
+                <StyledTableCell
+                  className={classes.hover}
+                  component="th"
+                  scope="row"
+                  hover="true"
+                >
+                  {row.title}
+                </StyledTableCell>
+                <StyledTableCell>{row.description}</StyledTableCell>
+                <StyledTableCell>{row.location}</StyledTableCell>
+                <StyledTableCell>{row.startAndEndTime}</StyledTableCell>
+                <StyledTableCell>{row.nrWorkersNeeded}</StyledTableCell>
+                {/* <StyledTableCell>{row.empty}</StyledTableCell> */}
               </StyledTableRow>
             ))}
           </TableBody>

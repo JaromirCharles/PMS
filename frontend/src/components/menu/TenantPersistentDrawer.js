@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import clsx from "clsx";
 import { makeStyles, useTheme } from "@material-ui/core/styles";
 import Drawer from "@material-ui/core/Drawer";
@@ -17,13 +17,13 @@ import ListItemText from "@material-ui/core/ListItemText";
 import ExitToAppTwoToneIcon from "@material-ui/icons/ExitToAppTwoTone";
 import AccountBoxIcon from "@material-ui/icons/AccountBox";
 import { Tooltip } from "@material-ui/core";
-import { Redirect } from "react-router-dom";
 import TenantView from "../tenant/TenantView";
 import CreateJobView from "../tenant/CreateJobView";
-import PeopleAltIcon from '@material-ui/icons/PeopleAlt';
-import { ListItemIcon } from '@material-ui/core';
-import WorkIcon from '@material-ui/icons/Work';
-import TenantEmployeesView from "../tenant/TenantEmployeesView"
+import PeopleAltIcon from "@material-ui/icons/PeopleAlt";
+import { ListItemIcon } from "@material-ui/core";
+import WorkIcon from "@material-ui/icons/Work";
+import TenantEmployeesView from "../tenant/TenantEmployeesView";
+import { Redirect, Link } from "react-router-dom";
 
 const drawerWidth = 240;
 
@@ -91,7 +91,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-function TenantPersistentDrawer() {
+function TenantPersistentDrawer({ match }) {
   const classes = useStyles();
   const theme = useTheme();
   const [open, setOpen] = useState(true); // set drawer to be open as default
@@ -100,6 +100,12 @@ function TenantPersistentDrawer() {
   const [jobsView, setJobsView] = useState(true);
   const [createJob, setCreateJob] = useState(false);
   const [employeeView, setEmployeeView] = useState(false);
+  const [companyName] = useState(match.params.tenant);
+
+  useEffect(() => {
+    console.log("ComponentDidMount");
+    console.log(match);
+  }, [match]);
 
   const handleDrawerOpen = () => {
     setOpen(true);
@@ -111,34 +117,37 @@ function TenantPersistentDrawer() {
 
   const handleClick = (from) => {
     console.log("Clicked Menu Item: " + from);
-    setJobsView(true)
-    setCreateJob(false)
-    setEmployeeView(false)
-    setCurrentMenu(from)
+    setJobsView(true);
+    setCreateJob(false);
+    setEmployeeView(false);
+    setCurrentMenu(from);
   };
 
   const onLogout = () => {
     console.log("Clicked Logout");
-    setLogout(true)
+    setLogout(true);
   };
 
   const createJobCallback = (value) => {
     console.log("Received from child", value);
     setCurrentMenu("");
     setCreateJob(value);
+    setJobsView(false);
   };
 
   const cancelCreateJobCallback = (value) => {
     setCurrentMenu("Jobs in System");
+    setJobsView(true);
     setCreateJob(false);
   };
 
   const employeesClick = () => {
-    console.log("clicked employees")
+    console.log("clicked employees");
     setCurrentMenu("");
-    setJobsView(false)
-    setEmployeeView(true)
-  }
+    setJobsView(false);
+    setCreateJob(false);
+    setEmployeeView(true);
+  };
 
   if (logout) {
     return <Redirect to="/" />;
@@ -163,7 +172,7 @@ function TenantPersistentDrawer() {
               <MenuIcon />
             </IconButton>
             <Typography variant="h6" className={classes.title}>
-              Company Name
+              {companyName}
             </Typography>
 
             <Tooltip title="Logout" arrow>
@@ -203,6 +212,8 @@ function TenantPersistentDrawer() {
               button
               autoFocus={false}
               key={"Jobs in System"}
+              component={Link}
+              to={`/${match.params.tenant}/jobs`}
               onClick={() => handleClick("Jobs in System")}
             >
               <ListItemIcon>
@@ -215,6 +226,8 @@ function TenantPersistentDrawer() {
               button
               autoFocus={false}
               key={"Employees"}
+              component={Link}
+              to={`/${match.params.tenant}/employees`}
               onClick={() => employeesClick()}
             >
               <ListItemIcon>
@@ -235,9 +248,19 @@ function TenantPersistentDrawer() {
             {currentMenu}
           </Typography>
 
-          {jobsView ? <TenantView parentCreateJobCallback={createJobCallback} />: null}
-          {createJob ? <CreateJobView parentCancelCallback={cancelCreateJobCallback} />: null}
-          {employeeView? <TenantEmployeesView/>: null}
+          {jobsView ? (
+            <TenantView
+              parentCreateJobCallback={createJobCallback}
+              companyName={companyName}
+            />
+          ) : null}
+          {createJob ? (
+            <CreateJobView
+              parentCancelCallback={cancelCreateJobCallback}
+              companyName={companyName}
+            />
+          ) : null}
+          {employeeView ? <TenantEmployeesView /> : null}
           {/* {createJob ? (
             <CreateJobView parentCancelCallback={cancelCreateJobCallback} />
           ) : (

@@ -11,7 +11,9 @@ function App() {
     <Router>
       <Switch>
         <Route path="/" exact component={Homepage} />
-        <Route path="/tenant" component={TenantPersistentDrawer} />
+        {/* <Route path="/tenant" component={TenantPersistentDrawer} /> */}
+        <Route path="/:tenant/jobs" exact component={TenantPersistentDrawer} />
+        <Route path="/:tenant/employees" exact component={TenantPersistentDrawer} />
         <Route path="/employee" component={EmployeePersistentDrawer} />
         <Route path="/register/:tenant/" component={EmployeeRegisterForm}/>
       </Switch>
