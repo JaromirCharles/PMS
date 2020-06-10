@@ -1,5 +1,4 @@
 // actions/mailer.js
-
 const nodemailer = require("../models/nodemailer");
 
 const mailer = {

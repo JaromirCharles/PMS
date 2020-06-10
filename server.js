@@ -3,6 +3,9 @@ const express = require("express");
 const bodyParser = require("body-parser");
 // require our mailer module
 const mailer = require("./actions/mailer");
+// reguire our firebase firestore module
+const firestore = require("./models/firestore");
+
 const app = express();
 // set the port the express server will run on
 const port = process.env.PORT || 5000;
@@ -26,13 +29,30 @@ app.post("/api/invitation", (req, res) => {
   console.log("list", list);
   list.map((e) => {
     // send emails via nodemailer
-    console.log("sending to ", e)
+    console.log("sending to ", e);
     mailer.sendRegistrationEmail(e);
   });
 
   res.send(
     `I received your POST request. This is what you sent me: ${req.body.email.emailList}`
   );
+});
+
+app.post("/api/register", (req, res) => {
+  console.log("received: ", req.body);
+  firestore.registerTenant(req.body.tenant);
+  res.send("registered tenant");
+});
+
+app.post("/api/validateLogin", async (req, res) => {
+  const validate = await firestore.checkCredentials(req.body.login.state);
+  res.send(validate);
+});
+
+app.post("/api/register_employee", async (req, res) => {
+  console.log("received: ", req.body)
+  await firestore.registerEmployee(req.body.employee);
+  res.send("registered employee")
 });
 
 // console.log that the server is up and running
