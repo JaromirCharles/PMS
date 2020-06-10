@@ -6,6 +6,7 @@ Personnel Management System Cloud Application for the Lecture Cloud Application 
 ## Cloning Project
 * `git clone git@github.com:JaromirCharles/PMS.git`
 * execute `yarn dev` within root folder
+  * yarn dev starts the frontend as well as the backend server
   * If yarn dev indicates missing modules, execute `npm install` within the frontend folder then `npm start`
 
 ## Development System
@@ -44,6 +45,7 @@ Development is done using `Visual Studio Code` and `Firefox`.
 * `React Router Dom` is used to route through the different pages. Install with `npm install --save react-router-dom`.
 * `Material-UI` is used to design the system. Install Material-UI's source files with `npm install --save @material-ui/core`.
   * `Material-UI` offers over 1000+ icons. Install with `npm install --save @material-ui/icons`
+  * npm i @material-ui/pickers
 
 * [bootstrap](https://getbootstrap.com/docs/4.0/getting-started/introduction/). 
 
