@@ -14,7 +14,6 @@ const useStyles = makeStyles((theme) => ({
 
 function LoginForm(props) {
   const classes = useStyles();
-
   const [redirect, setRedirect] = React.useState(false);
   const [tabValue, setTabValue] = React.useState(0);
   const [state, setState] = useState({
@@ -33,31 +32,53 @@ function LoginForm(props) {
 
   const handleSubmitClick = async (e) => {
     e.preventDefault();
-    if (state.email === "admin" && state.password === "admin") {
+    /* if (state.email === "admin" && state.password === "admin") {
       console.log("Success");
       setRedirect(true);
       return <Redirect to="/employee" />;
     } else {
       console.log("Wrong username or password");
-    }
-    // check database for valid email and password and return company name
-    const response = await fetch("/api/validateLogin", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ login: { state } }),
-    });
-    const body = await response.json();
-    if (response.status !== 200) throw Error(body.message);
-    console.log("body: ", body.validate)
-    if (body.validate === true) {
-      setCompanyName(body.companyName)
-      console.log("setting to true")
-      setRedirect(true)
+    } */
+    //if tabvalue = 0 then tenant, if 1 then employee
+    if (tabValue === 0) {
+      // check database for valid email and password and return company name
+      const response = await fetch("/api/validateLogin", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ login: { state } }),
+      });
+      const body = await response.json();
+      if (response.status !== 200) throw Error(body.message);
+      console.log("body: ", body.validate);
+      if (body.validate === true) {
+        setCompanyName(body.companyName);
+        console.log("setting to true");
+        setRedirect(true);
+      } else {
+        console.log("setting to false");
+        setRedirect(false);
+      }
     } else {
-      console.log("setting to false")
-      setRedirect(false)
+      // check database for valid employee credentials
+      const response = await fetch("api/validateEmployeeLogin", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ login: { state } }),
+      });
+      const body = await response.json();
+      if (response.status !== 200) throw Error(body.message);
+      if (body.validate === true) {
+        setCompanyName(body.companyName);
+        console.log("setting to true");
+        setRedirect(true);
+      } else {
+        console.log("setting to false");
+        setRedirect(false);
+      }
     }
   };
 
@@ -69,7 +90,7 @@ function LoginForm(props) {
     if (tabValue === 0) {
       return <Redirect component={Link} to={`/${companyName}/jobs`} />;
     } else {
-      return <Redirect to="/employee" />;
+      return <Redirect component={Link} to={`/employee/${companyName}`} />;
     }
   } else {
     return (
@@ -94,7 +115,6 @@ function LoginForm(props) {
           </Paper>
           <div className="form-group text-left">
             <label htmlFor="exampleInputEmail1">Email</label>
-
             <input
               type="email"
               className="form-control"
@@ -121,7 +141,8 @@ function LoginForm(props) {
           <button
             type="submit"
             className="btn btn-primary"
-            component={Link} to="/tenant"
+            component={Link}
+            to="/tenant"
             onClick={handleSubmitClick}
           >
             Login

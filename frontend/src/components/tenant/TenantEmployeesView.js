@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {
-  makeStyles
-} from "@material-ui/core";
+import { makeStyles } from "@material-ui/core";
 import { Typography } from "@material-ui/core";
 import TextField from "@material-ui/core/TextField";
 import AddCircleIcon from "@material-ui/icons/AddCircle";
@@ -21,8 +19,8 @@ const useStyles = makeStyles((theme) => ({
       color: "white", */
   },
   card: {
-      maxWidth: 250,
-      margin: theme.spacing(1)
+    maxWidth: 250,
+    margin: theme.spacing(1),
   },
   expand: {
     transform: "rotate(0deg)",
@@ -30,24 +28,24 @@ const useStyles = makeStyles((theme) => ({
     transition: theme.transitions.create("transform", {
       duration: theme.transitions.duration.shortest,
     }),
-    },
-    expandOpen: {
-        transform: 'rotate(180deg)',
-      },
+  },
+  expandOpen: {
+    transform: "rotate(180deg)",
+  },
 }));
 
 const headCells = [
-    {id: 'name', numeric: false, disablePadding: true, label: 'Name'},
-    {id: 'email', numeric: false, disablePadding: false, label: 'Email'},
-    {id: 'status', numeric: false, disablePadding: false, label: 'Status'}
-]
+  { id: "name", numeric: false, disablePadding: true, label: "Name" },
+  { id: "email", numeric: false, disablePadding: false, label: "Email" },
+  { id: "status", numeric: false, disablePadding: false, label: "Status" },
+];
 
-export default function TenantEmployeesView(props) {
+export default function TenantEmployeesView({ companyName }) {
   const classes = useStyles();
   const [emailList, updateEmailList] = useState([]);
   const [email, setEmail] = useState("");
-    const [employeeList, setEmployeeList] = useState([]);
-    
+  const [employeeList, setEmployeeList] = useState([]);
+
   const [expanded, setExpanded] = React.useState(false);
 
   useEffect(() => {
@@ -58,12 +56,19 @@ export default function TenantEmployeesView(props) {
       console.log("clean up");
     };
   }, []);
-    
 
   function createEmployeeList() {
     const list = [
-      createEmployee("Jaromir Charles", "Accepted", "jaromir.charles@htwg-konstanz.de"),
-      createEmployee("Benjamin Herrmann", "Request pending", "benjamin.herrmann@htwg-konstanz.de"),
+      createEmployee(
+        "Jaromir Charles",
+        "Accepted",
+        "jaromir.charles@htwg-konstanz.de"
+      ),
+      createEmployee(
+        "Benjamin Herrmann",
+        "Request pending",
+        "benjamin.herrmann@htwg-konstanz.de"
+      ),
     ];
     return list;
   }
@@ -80,23 +85,20 @@ export default function TenantEmployeesView(props) {
   };
 
   const onClickInvite = async () => {
-    /* console.log("onClickInvite")
-    const response = await fetch('/api/hello')
-    const body = await response.json();
-    if (response.status != 200) throw Error(body.message) */
-    console.log("emails in list", emailList)
+    console.log("emails in list", emailList);
+    console.log("companyName: ", companyName);
 
-    const response = await fetch('/api/invitation', {
-      method: 'POST',
+    const response = await fetch("/api/invitation", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
-      body: JSON.stringify({ email: { emailList } }),
+      body: JSON.stringify({ email: { emailList, tenant: { companyName } } }),
     });
     const body = await response.text();
-    if (response.status !== 200) throw Error(body.message) 
-    console.log(body)
-  }
+    if (response.status !== 200) throw Error(body.message);
+    console.log(body);
+  };
 
   return (
     <div>
@@ -148,12 +150,12 @@ export default function TenantEmployeesView(props) {
           >
             Invite
           </Button>
-              </div>
-              <Divider style={{height: "10px"}}/>
-              <Divider style={{height: "10px", opacity: 0.}}/>
+        </div>
+        <Divider style={{ height: "10px" }} />
+        <Divider style={{ height: "10px", opacity: 0 }} />
       </div>
       <div>
-       <TenantEmployeesTable/>
+        <TenantEmployeesTable />
       </div>
     </div>
   );

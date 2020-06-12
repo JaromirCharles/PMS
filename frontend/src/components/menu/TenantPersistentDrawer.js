@@ -260,12 +260,9 @@ function TenantPersistentDrawer({ match }) {
               companyName={companyName}
             />
           ) : null}
-          {employeeView ? <TenantEmployeesView /> : null}
-          {/* {createJob ? (
-            <CreateJobView parentCancelCallback={cancelCreateJobCallback} />
-          ) : (
-            <TenantView parentCreateJobCallback={createJobCallback} />
-          )} */}
+          {employeeView ? (
+            <TenantEmployeesView companyName={companyName} />
+          ) : null}
         </main>
       </div>
     );

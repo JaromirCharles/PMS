@@ -22,7 +22,7 @@ import AccountBoxIcon from "@material-ui/icons/AccountBox";
 //import EmployeeTable from '../employee/EmployeeTable';
 import { Tooltip } from "@material-ui/core";
 import { Redirect } from "react-router-dom";
-import EmployeeView from '../employee/EmployeeView'
+import EmployeeView from "../employee/EmployeeView";
 
 const drawerWidth = 240;
 
@@ -87,17 +87,17 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-function EmployeePersistentDrawer() {
+function EmployeePersistentDrawer({ match }) {
   const classes = useStyles();
   const theme = useTheme();
   const [open, setOpen] = useState(true); // set drawer to be open as default
   const [currentMenu, setCurrentMenu] = useState("Available Jobs");
   const [logout, setLogout] = useState(false);
+  const [companyName] = useState(match.params.tenant);
 
   useEffect(() => {
-    console.log("ComponentDidMount")
-  })
-
+    console.log("ComponentDidMount");
+  });
 
   const handleDrawerOpen = () => {
     setOpen(true);
@@ -140,7 +140,7 @@ function EmployeePersistentDrawer() {
               <MenuIcon />
             </IconButton>
             <Typography variant="h6" className={classes.title}>
-              Company Name
+              {companyName}
             </Typography>
 
             <Tooltip>
@@ -168,8 +168,8 @@ function EmployeePersistentDrawer() {
               {theme.direction === "ltr" ? (
                 <ChevronLeftIcon />
               ) : (
-                  <ChevronRightIcon />
-                )}
+                <ChevronRightIcon />
+              )}
             </IconButton>
           </div>
 
@@ -237,7 +237,7 @@ function EmployeePersistentDrawer() {
             {currentMenu}
           </Typography>
           {/* call rest of body put table */}
-          <EmployeeView currentView={currentMenu} />
+          <EmployeeView currentView={currentMenu} companyName={companyName} />
         </main>
       </div>
     );
