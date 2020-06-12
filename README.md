@@ -6,8 +6,10 @@ Personnel Management System Cloud Application for the Lecture Cloud Application 
 ## Cloning Project
 * `git clone git@github.com:JaromirCharles/PMS.git`
 * execute `yarn dev` within root folder
-  * yarn dev starts the frontend as well as the backend server
-  * If yarn dev indicates missing modules, execute `npm install` within the frontend folder then `npm start`
+  * `yarn dev` starts the frontend as well as the backend server
+    * frontend runs on port `3000`
+    * backend runs on port `5000`
+  * If `yarn dev` indicates missing modules, execute `npm install` within the frontend folder then `npm start`
 
 ## Development System
 
@@ -60,3 +62,9 @@ Development is done using `Visual Studio Code` and `Firefox`.
 * send emails with [Nodemailer](https://nodemailer.com/about/)
   * install the node mailer module using npm `npm install nodemailer`
   * [mailtrap](https://mailtrap.io/) Safe Email Testing for Staging & Development
+
+
+
+## Routing
+
+To route our pages and to have the url show which page we are currently on, we use react-router-dom
