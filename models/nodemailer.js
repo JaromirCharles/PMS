@@ -25,8 +25,6 @@ var mailtrapTransporter = nodemailer.createTransport({
 const mailOptions = {
   from: "pmsystememail@gmail.com",
   subject: "pms registration",
-  html:
-    'Hi there,<br/><br/>"Company" would like you to join their Personnel Management System to always be up to date with their current jobs.Click the following link to register to "Company\'s PMS system.<br/><br/><a href=\"http://localhost:3000/register/tenant\">Register now</a>',
 };
 
 module.exports = {

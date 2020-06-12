@@ -17,21 +17,24 @@ function registerTenant(tenant) {
 
 function registerEmployee(employee) {
   console.log("registerEmployee", employee.employee);
+  // add employee to employees collection
   db.collection("employees")
     .doc(employee.employee.email)
     .set(employee.employee);
 
+  // add employee's email to tenant's employee array
   db.collection("tenants")
     .doc(employee.employee.tenant)
     .update({
       employees: admin.firestore.FieldValue.arrayUnion(employee.employee.email),
     });
+
+  // add employee to login collection
 }
 
 async function checkCredentials(credentials) {
   var validate = false;
   var companyName = "";
-  console.log("in test");
   let credRef = db.collection("tenants");
   let query = await credRef
     .where("email", "==", credentials.email)
@@ -60,9 +63,40 @@ async function checkCredentials(credentials) {
   return { validate, companyName };
 }
 
+async function checkEmployeeCredentials(credentials) {
+  var validate = false;
+  var companyName = "";
+  let credRef = db.collection("employees");
+  let query = await credRef
+    .where("email", "==", credentials.email)
+    .get()
+    .then((snapshot) => {
+      if (snapshot.empty) {
+        console.log("No matching documents.");
+        return;
+      }
+      snapshot.forEach((doc) => {
+        console.log(doc.id, "=>", doc.data());
+        if (
+          doc.data().email === credentials.email &&
+          doc.data().password === credentials.password
+        ) {
+          validate = true;
+          companyName = doc.data().tenant;
+        } else {
+          validate = false;
+        }
+      });
+    })
+    .catch((err) => {
+      console.log("Error getting documents", err);
+    });
+  return { validate, companyName };
+}
+
 async function getTenantJobs(companyName) {
   var jobs = [];
-  console.log("getting jobs for: ", companyName);
+  //console.log("getting jobs for: ", companyName);
   let query = await db
     .collection("tenants")
     .doc(companyName)
@@ -114,6 +148,7 @@ async function deleteJobs(jobs) {
 module.exports = {
   registerTenant,
   checkCredentials,
+  checkEmployeeCredentials,
   registerEmployee,
   getTenantJobs,
   createNewJob,
