@@ -32,7 +32,7 @@ function LoginForm(props) {
 
   const handleSubmitClick = async (e) => {
     e.preventDefault();
-    /* if (state.email === "admin" && state.password === "admin") {
+    /*if (state.email === "admin" && state.password === "admin") {
       console.log("Success");
       setRedirect(true);
       return <Redirect to="/employee" />;
@@ -90,7 +90,8 @@ function LoginForm(props) {
     if (tabValue === 0) {
       return <Redirect component={Link} to={`/${companyName}/jobs`} />;
     } else {
-      return <Redirect component={Link} to={`/employee/${companyName}`} />;
+      return <Redirect component={Link} to={{pathname: `/employee/${companyName}`,
+                                            state: {email: state.email}}} />;
     }
   } else {
     return (
