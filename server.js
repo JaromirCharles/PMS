@@ -88,5 +88,14 @@ app.post("/api/tenant/delete_jobs", async function (req, res) {
   res.send("ok");
 });
 
+
+app.post("/api/tenant/add_AppliedJob", async function (req, res) {
+  console.log(req.body.employeeEmail);
+  console.log(req.body.jobId);
+  console.log(req.body.companyName);
+  const retVal = await firestore.addAppliedJob(req.body.employeeEmail, req.body.companyName, req.body.jobId);
+  res.send("ok");
+});
+
 // console.log that the server is up and running
 app.listen(port, () => console.log(`Listening on port ${port}`));

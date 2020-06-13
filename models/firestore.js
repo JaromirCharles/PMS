@@ -20,7 +20,7 @@ function registerEmployee(employee) {
   // add employee to employees collection
   db.collection("employees")
     .doc(employee.employee.email)
-    .set(employee.employee);
+    .set(employee.employee) 
 
   // add employee's email to tenant's employee array
   db.collection("tenants")
@@ -121,7 +121,6 @@ async function getTenantJobs(companyName) {
 
 async function createNewJob(job) {
   var retVal = "failed";
-  console.log(job);
   //db.collection("tenants").doc(job.tenant.companyName).set(tenantUpdate);
   db.collection("tenants")
     .doc(job.tenant.companyName)
@@ -145,6 +144,14 @@ async function deleteJobs(jobs) {
   });
 }
 
+async function addAppliedJob(employeeEmail, companyName, jobReferenceId) {
+  db.collection("employees")
+  .doc(employeeEmail)
+  .update({
+    appliedJobs: admin.firestore.FieldValue.arrayUnion(jobReferenceId),
+  });
+}
+
 module.exports = {
   registerTenant,
   checkCredentials,
@@ -153,4 +160,5 @@ module.exports = {
   getTenantJobs,
   createNewJob,
   deleteJobs,
+  addAppliedJob,
 };

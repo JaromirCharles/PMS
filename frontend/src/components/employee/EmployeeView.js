@@ -56,7 +56,7 @@ const columns = [
   { id: "empty", label: "" },
 ];
 
-export default function EmployeeView({ cView, companyName }) {
+export default function EmployeeView({ cView, companyName, employeeEmail }) {
   const [tableData, setTableData] = useState([]);
   const [currentView] = useState([cView]);
   const [showPopup, setShowPopup] = useState(false);
@@ -122,6 +122,20 @@ export default function EmployeeView({ cView, companyName }) {
     setShowPopup(true);
   };
 
+  const handleApplyClick = async (event, jobId) => {
+    //console.log(employeeEmail);
+    //console.log(jobId);
+    const response = await fetch("/api/tenant/add_AppliedJob", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ employeeEmail , companyName, jobId }),
+    });
+    const body = await response.text();
+    if (response.status !== 200) throw Error(body.message);
+  }
+
   return (
     <Fragment>
       <TableContainer component={Paper}>
@@ -160,7 +174,7 @@ export default function EmployeeView({ cView, companyName }) {
             ))} */}
             {availableJobs.map((row) => (
               <StyledTableRow
-                onClick={(event) => handleJobClick(event, row.id)}
+                //onClick={(event) => handleJobClick(event, row.id)}
                 key={row.id}
               >
                 <StyledTableCell
@@ -175,7 +189,9 @@ export default function EmployeeView({ cView, companyName }) {
                 <StyledTableCell>{row.location}</StyledTableCell>
                 <StyledTableCell>{row.startAndEndTime}</StyledTableCell>
 
-                <StyledTableCell className={classes.applyHover}>
+                <StyledTableCell className={classes.applyHover}
+                  onClick={(event) => handleApplyClick(event, row.id)}
+                >
                   apply
                 </StyledTableCell>
               </StyledTableRow>
