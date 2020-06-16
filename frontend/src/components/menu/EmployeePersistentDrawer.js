@@ -87,14 +87,13 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-function EmployeePersistentDrawer({ match},  props) {
+function EmployeePersistentDrawer(props) {
   const classes = useStyles();
   const theme = useTheme();
   const [open, setOpen] = useState(true); // set drawer to be open as default
   const [currentMenu, setCurrentMenu] = useState("Available Jobs");
   const [logout, setLogout] = useState(false);
-  const [companyName] = useState(match.params.tenant);
-
+  const [companyName] = useState(props.match.params.tenant);
 
   useEffect(() => {
     console.log("ComponentDidMount");
@@ -239,7 +238,7 @@ function EmployeePersistentDrawer({ match},  props) {
             {currentMenu}
           </Typography>
           {/* call rest of body put table */}
-          <EmployeeView currentView={currentMenu} companyName={companyName} employeeEmail={"jaromircharles@hotmail.com"} />
+          <EmployeeView currentView={currentMenu} companyName={companyName} employeeEmail={props.location.state.email} />
         </main>
       </div>
     );
