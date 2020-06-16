@@ -1,18 +1,45 @@
-import React, { useState } from "react";
+import React, { useState, Fragment } from "react";
 import { Redirect, Link } from "react-router-dom";
 import Tabs from "@material-ui/core/Tabs";
 import Tab from "@material-ui/core/Tab";
 import { makeStyles } from "@material-ui/core/styles";
 import Paper from "@material-ui/core/Paper";
+import Typography from "@material-ui/core/Typography";
+import AppBar from "@material-ui/core/AppBar";
+import Toolbar from "@material-ui/core/Toolbar";
 
 const useStyles = makeStyles((theme) => ({
   root: {
     flexGrow: 1,
     backgroundColor: theme.palette.background.paper,
   },
+  appBar: {
+    background: "grey",
+  },
+  title: {
+    flexGrow: 1,
+  },
+  header: {
+    display: "flex",
+    margin: theme.spacing(1),
+    alignItems: "center",
+  },
+  login: {
+    flexGrow: 1,
+    width: 350,
+    position: "absolute",
+    left: "50%",
+    top: '25%',
+    transform: 'translate(-50%, -50%)',
+    alignItems: "center",
+  },
+  button: {
+    display: 'flex',
+    alignItems: 'center',
+  }
 }));
 
-function LoginForm(props) {
+function LoginForm() {
   const classes = useStyles();
   const [redirect, setRedirect] = React.useState(false);
   const [tabValue, setTabValue] = React.useState(0);
@@ -32,14 +59,7 @@ function LoginForm(props) {
 
   const handleSubmitClick = async (e) => {
     e.preventDefault();
-    /*if (state.email === "admin" && state.password === "admin") {
-      console.log("Success");
-      setRedirect(true);
-      return <Redirect to="/employee" />;
-    } else {
-      console.log("Wrong username or password");
-    } */
-    //if tabvalue = 0 then tenant, if 1 then employee
+
     if (tabValue === 0) {
       // check database for valid email and password and return company name
       const response = await fetch("/api/validateLogin", {
@@ -74,6 +94,8 @@ function LoginForm(props) {
       if (body.validate === true) {
         setCompanyName(body.companyName);
         console.log("setting to true");
+        // save user's email to localstorage so that the application always knows which user is currently logged on.
+        window.localStorage.setItem("user_email", state.email);
         setRedirect(true);
       } else {
         console.log("setting to false");
@@ -90,66 +112,82 @@ function LoginForm(props) {
     if (tabValue === 0) {
       return <Redirect component={Link} to={`/${companyName}/jobs`} />;
     } else {
-      return <Redirect component={Link} to={{pathname: `/employee/${companyName}`,
-                                            state: {email: state.email}}} />;
+      return (
+        <Redirect
+          component={Link}
+          to={{
+            pathname: `/employee/${companyName}`,
+            state: { email: state.email },
+          }}
+        />
+      );
     }
   } else {
     return (
-      <div className="card col-12 col-lg-4 login-card mt-2 ml-4 mb-4 hv-center">
-        <nav className="navbar navbar-dark bg-primary">
-          <div className="row col-12 d-flex justify-content-center text-white">
-            <span className="h3">Login</span>
-          </div>
-        </nav>
-        <form>
-          <Paper className={classes.root}>
-            <Tabs
-              value={tabValue}
-              onChange={handleTabChange}
-              indicatorColor="primary"
-              textColor="primary"
-              centered
+      <Fragment>
+        <Fragment>
+          <AppBar className={classes.appBar} position="static">
+            <Toolbar>
+              <Typography variant="h6" className={classes.title}>
+                Personnel Management System
+              </Typography>
+            </Toolbar>
+          </AppBar>
+        </Fragment>
+
+        {/* <div className="card col-12 col-lg-4 login-card mt-2 ml-4 mb-4 hv-center"> */}
+        <div className={classes.login}>
+          <Typography className={classes.header} variant="h6">Log in to your PMS</Typography>
+          <form>
+            <Paper className={classes.root}>
+              <Tabs
+                value={tabValue}
+                onChange={handleTabChange}
+                indicatorColor="primary"
+                textColor="primary"
+                centered
+              >
+                <Tab label="Tenant" />
+                <Tab label="Employee" />
+              </Tabs>
+            </Paper>
+            <div className="form-group text-left">
+              <label htmlFor="exampleInputEmail1">Email</label>
+              <input
+                type="email"
+                className="form-control"
+                id="email"
+                aria-describedby="emailHelp"
+                placeholder="Enter email"
+                value={state.username}
+                onChange={handleChange}
+              />
+            </div>
+            <div className="form-group text-left">
+              <label htmlFor="exampleInputPassword1">Password</label>
+
+              <input
+                type="password"
+                className="form-control"
+                id="password"
+                placeholder="Password"
+                value={state.password}
+                onChange={handleChange}
+              />
+            </div>
+
+            <button
+              type="submit"
+              className="btn btn-primary"
+              component={Link}
+              to="/tenant"
+              onClick={handleSubmitClick}
             >
-              <Tab label="Tenant" />
-              <Tab label="Employee" />
-            </Tabs>
-          </Paper>
-          <div className="form-group text-left">
-            <label htmlFor="exampleInputEmail1">Email</label>
-            <input
-              type="email"
-              className="form-control"
-              id="email"
-              aria-describedby="emailHelp"
-              placeholder="Enter email"
-              value={state.username}
-              onChange={handleChange}
-            />
-          </div>
-          <div className="form-group text-left">
-            <label htmlFor="exampleInputPassword1">Password</label>
-
-            <input
-              type="password"
-              className="form-control"
-              id="password"
-              placeholder="Password"
-              value={state.password}
-              onChange={handleChange}
-            />
-          </div>
-
-          <button
-            type="submit"
-            className="btn btn-primary"
-            component={Link}
-            to="/tenant"
-            onClick={handleSubmitClick}
-          >
-            Login
-          </button>
-        </form>
-      </div>
+              Login
+            </button>
+          </form>
+        </div>
+      </Fragment>
     );
   }
 }

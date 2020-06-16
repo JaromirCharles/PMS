@@ -1,6 +1,38 @@
-import React, { useState } from "react";
+import React, { useState, Fragment } from "react";
+import Typography from "@material-ui/core/Typography";
+import AppBar from "@material-ui/core/AppBar";
+import { makeStyles } from "@material-ui/core/styles";
+import Toolbar from "@material-ui/core/Toolbar";
+
+const useStyles = makeStyles((theme) => ({
+  root: {
+    flexGrow: 1,
+    backgroundColor: theme.palette.background.paper,
+  },
+  appBar: {
+    background: "grey",
+  },
+  title: {
+    flexGrow: 1,
+  },
+  register: {
+    flexGrow: 1,
+    width: 350,
+    position: "absolute",
+    left: "50%",
+    top: "35%",
+    transform: "translate(-50%, -50%)",
+    alignItems: "center",
+  },
+  header: {
+    display: "flex",
+    margin: theme.spacing(1),
+    alignItems: "center",
+  },
+}));
 
 function RegistrationForm(props) {
+  const classes = useStyles();
   const [state, setState] = useState({
     name: "",
     email: "",
@@ -27,70 +59,81 @@ function RegistrationForm(props) {
       body: JSON.stringify({ tenant: { state } }),
     });
     const body = await response.text();
-    if (response.status !== 200) throw Error(body.message)
+    if (response.status !== 200) throw Error(body.message);
   };
 
   return (
-    <div className="card col-12 col-lg-4 login-card mt-2 ml-4 mb-4 hv-center">
-      <form>
-        <div className="form-group text-left">
-          <label htmlFor="exampleInputName">Company's Name</label>
-          <input
-            type="text"
-            className="form-control"
-            id="name"
-            placeholder="Company's name"
-            value={state.name}
-            onChange={handleChange}
-          />
-        </div>
-        <div className="form-group text-left">
-          <label htmlFor="exampleInputEmail1">Email address</label>
-          <input
-            type="email"
-            className="form-control"
-            id="email"
-            aria-describedby="emailHelp"
-            placeholder="Enter email"
-            value={state.email}
-            onChange={handleChange}
-          />
+    <Fragment>
+      <Fragment>
+        <AppBar className={classes.appBar} position="static">
+          <Toolbar>
+            <Typography variant="h6" className={classes.title}>
+              Personnel Management System
+            </Typography>
+          </Toolbar>
+        </AppBar>
+      </Fragment>
+      <div className={classes.register}>
+        <form>
+          <div className="form-group text-left">
+            <label htmlFor="exampleInputName">Company's Name</label>
+            <input
+              type="text"
+              className="form-control"
+              id="name"
+              placeholder="Company's name"
+              value={state.name}
+              onChange={handleChange}
+            />
+          </div>
+          <div className="form-group text-left">
+            <label htmlFor="exampleInputEmail1">Email address</label>
+            <input
+              type="email"
+              className="form-control"
+              id="email"
+              aria-describedby="emailHelp"
+              placeholder="Enter email"
+              value={state.email}
+              onChange={handleChange}
+            />
 
-          <small id="emailHelp" className="form-text text-muted">
-            We'll never share your email with anyone else.
-          </small>
-        </div>
-        <div className="form-group text-left">
-          <label htmlFor="exampleInputPassword1">Password</label>
+            <small id="emailHelp" className="form-text text-muted">
+              We'll never share your email with anyone else.
+            </small>
+          </div>
+          <div className="form-group text-left">
+            <label htmlFor="exampleInputPassword1">Password</label>
 
-          <input
-            type="password"
-            className="form-control"
-            id="password"
-            placeholder="Password"
-            value={state.password}
-            onChange={handleChange}
-          />
-        </div>
-        <div className="form-group text-left">
-          <label htmlFor="exampleInputPassword1">Confirm Password</label>
-          <input
-            type="password"
-            className="form-control"
-            id="confirmPassword"
-            placeholder="Confirm Password"
-          />
-        </div>
+            <input
+              type="password"
+              className="form-control"
+              id="password"
+              placeholder="Password"
+              value={state.password}
+              onChange={handleChange}
+            />
+          </div>
+          <div className="form-group text-left">
+            <label htmlFor="exampleInputPassword1">Confirm Password</label>
+            <input
+              type="password"
+              className="form-control"
+              id="confirmPassword"
+              placeholder="Confirm Password"
+            />
+          </div>
 
-        <button
-          type="submit"
-          className="btn btn-primary"
-          onClick={handleSubmitClick}
-        >
-          Register
-        </button>
-      </form>
-    </div>
+          <button
+            type="submit"
+            className="btn btn-primary"
+            onClick={handleSubmitClick}
+          >
+            Register
+          </button>
+        </form>
+      </div>
+    </Fragment>
   );
 }
 export default RegistrationForm;

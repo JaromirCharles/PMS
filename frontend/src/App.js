@@ -5,13 +5,17 @@ import Homepage from "./components/homepage/Homepage";
 import EmployeePersistentDrawer from "./components/menu/EmployeePersistentDrawer";
 import TenantPersistentDrawer from "./components/menu/TenantPersistentDrawer";
 import EmployeeRegisterForm from "./components/registrationForm/EmployeeRegisterForm";
+import LoginForm from "./components/loginForm/LoginForm";
+import RegistrationForm from "./components/registrationForm/RegistrationForm";
 
 function App() {
   return (
     <Router>
       <Switch>
         <Route path="/" exact component={Homepage} />
-        {/* <Route path="/tenant" component={TenantPersistentDrawer} /> */}
+        <Route path="/login" exact component={LoginForm} />
+        <Route path="/register" exact component={RegistrationForm} />
+        
         <Route path="/:tenant/jobs" exact component={TenantPersistentDrawer} />
         <Route path="/:tenant/employees" exact component={TenantPersistentDrawer} />
         <Route path="/employee/:tenant" exact component={EmployeePersistentDrawer} />
