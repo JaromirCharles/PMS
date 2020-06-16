@@ -63,3 +63,21 @@
 * Access application via `localhost:3000`
 
 * Stop container from running with `docker stop pms`
+
+## Useful docker commands
+
+* Build an image from a Dockerfile
+  * `docker build --tag <name>:<tag>`
+* Run a command in a new container
+  * `docker run --publish <localhost_port>:<container_port> --detach --name <container_name> <image>:<tag>`
+* list images
+  * `docker image ls`
+* list containers
+  * `docker ps --all`
+* Stop running container
+  * `docker stop <container_name>`
+* Remove container
+  * `docker rm <container_name>`
+* Remove image
+  * `docker image rm <image_id>`
+
