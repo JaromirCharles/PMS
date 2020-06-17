@@ -95,7 +95,12 @@ function TenantPersistentDrawer({ match }) {
   const classes = useStyles();
   const theme = useTheme();
   const [open, setOpen] = useState(true); // set drawer to be open as default
-  const [currentMenu, setCurrentMenu] = useState("Jobs in System");
+  const [currentMenu, setCurrentMenu] = useState(
+    window.localStorage.getItem("view")
+  );
+  const [view, setView] = useState(
+    window.localStorage.getItem("view") || "jobs"
+  );
   const [logout, setLogout] = useState(false);
   const [jobsView, setJobsView] = useState(true);
   const [createJob, setCreateJob] = useState(false);
@@ -103,8 +108,7 @@ function TenantPersistentDrawer({ match }) {
   const [companyName] = useState(match.params.tenant);
 
   useEffect(() => {
-    console.log("ComponentDidMount");
-    console.log(match);
+    console.log("loading view: ", view);
   }, [match]);
 
   const handleDrawerOpen = () => {
@@ -117,10 +121,22 @@ function TenantPersistentDrawer({ match }) {
 
   const handleClick = (from) => {
     console.log("Clicked Menu Item: " + from);
+    window.localStorage.setItem("view", "jobs");
+    setView("jobs");
     setJobsView(true);
     setCreateJob(false);
     setEmployeeView(false);
     setCurrentMenu(from);
+  };
+
+  const employeesClick = () => {
+    console.log("Clicked Menu Item: Employees");
+    window.localStorage.setItem("view", "employees");
+    setView("employees");
+    setCurrentMenu("");
+    setJobsView(false);
+    setCreateJob(false);
+    setEmployeeView(true);
   };
 
   const onLogout = () => {
@@ -141,12 +157,33 @@ function TenantPersistentDrawer({ match }) {
     setCreateJob(false);
   };
 
-  const employeesClick = () => {
-    console.log("clicked employees");
-    setCurrentMenu("");
-    setJobsView(false);
-    setCreateJob(false);
-    setEmployeeView(true);
+  const matchView = () => {
+    switch (view) {
+      case "jobs":
+        return (
+          <TenantView
+            parentCreateJobCallback={createJobCallback}
+            companyName={companyName}
+          />
+        );
+      case "employees":
+        return <TenantEmployeesView companyName={companyName} />;
+      case "createJob":
+        return (
+          <CreateJobView
+            job={""}
+            parentCancelCallback={cancelCreateJobCallback}
+            companyName={companyName}
+          />
+        );
+      default:
+        return (
+          <TenantView
+            parentCreateJobCallback={createJobCallback}
+            companyName={companyName}
+          />
+        );
+    }
   };
 
   if (logout) {
@@ -248,21 +285,8 @@ function TenantPersistentDrawer({ match }) {
             {currentMenu}
           </Typography>
 
-          {jobsView ? (
-            <TenantView
-              parentCreateJobCallback={createJobCallback}
-              companyName={companyName}
-            />
-          ) : null}
-          {createJob ? (
-            <CreateJobView
-              parentCancelCallback={cancelCreateJobCallback}
-              companyName={companyName}
-            />
-          ) : null}
-          {employeeView ? (
-            <TenantEmployeesView companyName={companyName} />
-          ) : null}
+          {matchView()}
+
         </main>
       </div>
     );

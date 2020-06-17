@@ -12,6 +12,7 @@ import Button from "@material-ui/core/Button";
 import EditIcon from "@material-ui/icons/Edit";
 import AddIcon from "@material-ui/icons/Add";
 import Checkbox from "@material-ui/core/Checkbox";
+import CreateJobView from "./CreateJobView";
 //import CreateJobPopup from "./CreateJobPopup";
 
 const StyledTableCell = withStyles((theme) => ({
@@ -71,6 +72,9 @@ export default function TenantView({ companyName, parentCreateJobCallback }) {
   const classes = useStyles();
   const [deleteJobList, updateDeleteJobList] = useState([]);
   const [jobs, setJobs] = useState([]);
+  const [editJob, setEditJob] = useState(false);
+  const [jobIDToEdit, setJobIDToEdit] = useState("");
+  const [retrievedJob, setRetrievedJob] = useState({});
 
   useEffect(() => {
     console.log("componentDidMount with name: ", companyName);
@@ -80,7 +84,9 @@ export default function TenantView({ companyName, parentCreateJobCallback }) {
     /* var rows = createEmployeeData();
     setTableData(rows);
     createEmployeeData(); */
-  }, []);
+    // ependency might cause a problem.
+    // Keep an eye out on the components behavior.
+  }, [deleteJobList]);
 
   const fetchJobs = async () => {
     const data = await fetch("/api/tenant_jobs", {
@@ -93,6 +99,23 @@ export default function TenantView({ companyName, parentCreateJobCallback }) {
     const retJobs = await data.json();
     console.log(retJobs);
     setJobs(retJobs);
+  };
+
+  const fetchJobData = async (id) => {
+    console.log("fetching job data with id: ", id);
+    const jobData = await fetch("/api/get_job_info", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        id,
+        companyName,
+      }),
+    });
+    const job = await jobData.json();
+    console.log("received job information: ", job);
+    setRetrievedJob(job.jobInfo);
   };
 
   function createEmployeeData() {
@@ -162,56 +185,82 @@ export default function TenantView({ companyName, parentCreateJobCallback }) {
       }),
     });
     const body = await response.text();
-    //    if (response.status !== 200) throw Error(body.message);
+    if (response.status !== 200) throw Error(body.message);
+    updateDeleteJobList([]);
+  };
+  const onClickEdit = async (jobID) => {
+    console.log("Editing: ", jobID);
+    await fetchJobData(jobID);
+    setEditJob(true);
+    setJobIDToEdit(jobID);
   };
 
-  return (
-    <Fragment>
-      <div className={classes.buttons}>
-        <Button
-          className={classes.buttons}
-          variant="contained"
-          color="primary"
-          size="small"
-          onClick={() => onCreateJob()}
-          startIcon={<AddIcon />}
-        >
-          Create Job
-        </Button>
-        <Button
-          className={classes.buttons}
-          variant="contained"
-          color="secondary"
-          size="small"
-          disabled={deleteJobListEmpty()}
-          startIcon={<DeleteIcon />}
-          onClick={() => deleteJobs()}
-        >
-          Delete
-        </Button>
-        <Button
-          className={classes.buttons}
-          variant="contained"
-          color="default"
-          size="small"
-          startIcon={<EditIcon color="inherit" />}
-        >
-          Edit
-        </Button>
-      </div>
+  function parentCallback() {
+    setEditJob(false);
+  }
 
-      <TableContainer component={Paper}>
-        <Table className={classes.table} aria-label="customized table">
-          <TableHead>
-            <TableRow>
-              {columns.map((column) => (
-                <StyledTableCell key={column.id}>
-                  {column.label}
-                </StyledTableCell>
-              ))}
-            </TableRow>
-          </TableHead>
-          {/* <TableBody>
+  function EditJobView() {
+    return (
+      <CreateJobView
+        jobID={jobIDToEdit}
+        job={retrievedJob}
+        companyName={companyName}
+        parentCancelCallback={parentCallback}
+        header={"Edit"}
+      />
+    );
+  }
+
+  if (editJob) {
+    return <EditJobView />;
+  } else {
+    return (
+      <Fragment>
+        <div className={classes.buttons}>
+          <Button
+            className={classes.buttons}
+            variant="contained"
+            color="primary"
+            size="small"
+            onClick={() => onCreateJob()}
+            startIcon={<AddIcon />}
+          >
+            Create Job
+          </Button>
+          <Button
+            className={classes.buttons}
+            variant="contained"
+            color="secondary"
+            size="small"
+            disabled={deleteJobListEmpty()}
+            startIcon={<DeleteIcon />}
+            onClick={() => deleteJobs()}
+          >
+            Delete
+          </Button>
+          <Button
+            className={classes.buttons}
+            variant="contained"
+            color="default"
+            size="small"
+            startIcon={<EditIcon color="inherit" />}
+          >
+            Edit
+          </Button>
+        </div>
+
+        <TableContainer component={Paper}>
+          <Table className={classes.table} aria-label="customized table">
+            <TableHead>
+              <TableRow>
+                {columns.map((column) => (
+                  <StyledTableCell key={column.id}>
+                    {column.label}
+                  </StyledTableCell>
+                ))}
+              </TableRow>
+            </TableHead>
+            {/* <TableBody>
             {tableData.map((row) => (
               <StyledTableRow key={row.jobTitle}>
                 <Checkbox
@@ -239,37 +288,46 @@ export default function TenantView({ companyName, parentCreateJobCallback }) {
               </StyledTableRow>
             ))}
           </TableBody> */}
-          <TableBody>
-            {jobs.map((row) => (
-              <StyledTableRow key={row.id}>
-                <Checkbox
-                  inputProps={{ "aria-label": "uncontrolled-checkbox" }}
-                  size="small"
-                  onChange={(event) => {
-                    event.target.checked
-                      ? addJobToDeleteList(row.id)
-                      : removeJobFromDeleteList(row.id);
-                  }}
-                />
-                <StyledTableCell
-                  className={classes.hover}
-                  component="th"
-                  scope="row"
-                  hover="true"
-                >
-                  {row.title}
-                </StyledTableCell>
-                <StyledTableCell>{row.description}</StyledTableCell>
-                <StyledTableCell>{row.location}</StyledTableCell>
-                <StyledTableCell>{row.startAndEndTime}</StyledTableCell>
-                <StyledTableCell>{row.nrWorkersNeeded}</StyledTableCell>
-                {/* <StyledTableCell>{row.empty}</StyledTableCell> */}
-              </StyledTableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-      {/* {showCreateJobPopup === true ? <CreateJobPopup /> : null} */}
-    </Fragment>
-  );
+            <TableBody>
+              {jobs.map((row) => (
+                <StyledTableRow key={row.id}>
+                  <Checkbox
+                    inputProps={{ "aria-label": "uncontrolled-checkbox" }}
+                    size="small"
+                    onChange={(event) => {
+                      event.target.checked
+                        ? addJobToDeleteList(row.id)
+                        : removeJobFromDeleteList(row.id);
+                    }}
+                  />
+                  <Button
+                    style={{ outline: 0 }}
+                    variant="text"
+                    color="default"
+                    size="small"
+                    startIcon={<EditIcon fontSize="small" color="inherit" />}
+                    onClick={() => onClickEdit(row.id)}
+                  ></Button>
+                  <StyledTableCell
+                    className={classes.hover}
+                    component="th"
+                    scope="row"
+                    hover="true"
+                  >
+                    {row.title}
+                  </StyledTableCell>
+                  <StyledTableCell>{row.description}</StyledTableCell>
+                  <StyledTableCell>{row.location}</StyledTableCell>
+                  <StyledTableCell>{row.startAndEndTime}</StyledTableCell>
+                  <StyledTableCell>{row.nrWorkersNeeded}</StyledTableCell>
+                  {/* <StyledTableCell>{row.empty}</StyledTableCell> */}
+                </StyledTableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+        {/* {showCreateJobPopup === true ? <CreateJobPopup /> : null} */}
+      </Fragment>
+    );
+  }
 }

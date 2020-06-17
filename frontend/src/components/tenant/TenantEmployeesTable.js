@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useEffect} from "react";
 import PropTypes from "prop-types";
 import clsx from "clsx";
 import { lighten, makeStyles } from "@material-ui/core/styles";
@@ -207,7 +207,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function TenantEmployeesTable() {
+export default function TenantEmployeesTable(props) {
   const classes = useStyles();
   const [order, setOrder] = React.useState("asc");
   const [orderBy, setOrderBy] = React.useState("calories");
@@ -215,6 +215,27 @@ export default function TenantEmployeesTable() {
   const [page, setPage] = React.useState(0);
   const [dense, setDense] = React.useState(false);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
+  const [employees, setEmployees] = React.useState([]);
+
+  useEffect(() => {
+    // Retrieve tenants employees information.
+    console.log("getting tenants employee info for :", props.companyName)
+    fetchEmployeeData();
+  }, []);
+
+  const fetchEmployeeData = async () => {
+    const company = props.companyName;
+    const data = await fetch("/api/tenant_employees", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ company }),
+    });
+    const employeeData = await data.json();
+    console.log("received: \n", employeeData);
+    setEmployees(employeeData);
+  }
 
   const handleRequestSort = (event, property) => {
     const isAsc = orderBy === property && order === "asc";
@@ -281,7 +302,7 @@ export default function TenantEmployeesTable() {
               onRequestSort={handleRequestSort}
             />
             <TableBody>
-              {stableSort(rows, getComparator(order, orderBy))
+              {stableSort(employees, getComparator(order, orderBy))
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map((row, index) => {
                   const isItemSelected = isSelected(row.name);
@@ -294,7 +315,7 @@ export default function TenantEmployeesTable() {
                       role="checkbox"
                       aria-checked={isItemSelected}
                       tabIndex={-1}
-                      key={row.name}
+                      key={row.email}
                       selected={isItemSelected}
                     >
                       <TableCell padding="checkbox">
@@ -309,7 +330,7 @@ export default function TenantEmployeesTable() {
                         scope="row"
                         padding="none"
                       >
-                        {row.name}
+                        {`${row.name} ${row.surname}`}
                       </TableCell>
                       <TableCell align="left">{row.email}</TableCell>
                       <TableCell align="left">{row.status}</TableCell>
@@ -327,7 +348,7 @@ export default function TenantEmployeesTable() {
         <TablePagination
           rowsPerPageOptions={[5, 10, 25]}
           component="div"
-          count={rows.length}
+          count={employees.length}
           rowsPerPage={rowsPerPage}
           page={page}
           onChangePage={handleChangePage}

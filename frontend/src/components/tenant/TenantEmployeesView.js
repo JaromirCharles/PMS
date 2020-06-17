@@ -34,47 +34,17 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const headCells = [
-  { id: "name", numeric: false, disablePadding: true, label: "Name" },
-  { id: "email", numeric: false, disablePadding: false, label: "Email" },
-  { id: "status", numeric: false, disablePadding: false, label: "Status" },
-];
-
 export default function TenantEmployeesView({ companyName }) {
   const classes = useStyles();
   const [emailList, updateEmailList] = useState([]);
   const [email, setEmail] = useState("");
-  const [employeeList, setEmployeeList] = useState([]);
-
-  const [expanded, setExpanded] = React.useState(false);
 
   useEffect(() => {
     console.log("Get employee list");
-    const empList = createEmployeeList();
-    setEmployeeList(empList);
     return () => {
       console.log("clean up");
     };
   }, []);
-
-  function createEmployeeList() {
-    const list = [
-      createEmployee(
-        "Jaromir Charles",
-        "Accepted",
-        "jaromir.charles@htwg-konstanz.de"
-      ),
-      createEmployee(
-        "Benjamin Herrmann",
-        "Request pending",
-        "benjamin.herrmann@htwg-konstanz.de"
-      ),
-    ];
-    return list;
-  }
-  function createEmployee(name, status, email) {
-    return { name, status, email };
-  }
 
   const addEmail = () => {
     // add email to list, clear email textfield, disable add
@@ -155,7 +125,7 @@ export default function TenantEmployeesView({ companyName }) {
         <Divider style={{ height: "10px", opacity: 0 }} />
       </div>
       <div>
-        <TenantEmployeesTable />
+        <TenantEmployeesTable companyName={companyName}/>
       </div>
     </div>
   );
