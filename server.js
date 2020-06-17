@@ -21,7 +21,7 @@ app.get("/api/hello", (req, res) => {
   res.send({ express: "Hello From Express" });
 });
 
-app.post("/api/invitation", (req, res) => {
+app.post("/api/invitation", async (req, res) => {
   // destructure the email property from the http request send from the front end
   const { email } = req.body;
   const tenant = req.body.email.tenant.companyName;
@@ -32,7 +32,10 @@ app.post("/api/invitation", (req, res) => {
     // send emails via nodemailer
     console.log("sending to ", e);
     mailer.sendRegistrationEmail(e, tenant);
+    // add each email to tenant's employees list
+    firestore.addEmpToTenantEmpArray(tenant, e);
   });
+
 
   res.send(
     `I received your POST request. This is what you sent me: ${req.body.email.emailList}`
@@ -72,15 +75,24 @@ app.post("/api/tenant_jobs", async function (req, res) {
   res.send(jobs);
 });
 
+app.post("/api/tenant_employees", async function (req, res) {
+  const employees = await firestore.getTenantEmployees(req.body.company);
+  res.send(employees)
+});
+
 app.post("/api/tenant/create_job", async function (req, res) {
   //console.log("/api/tenant/create_job: ", req.body.newJob)
   const retVal = await firestore.createNewJob(req.body.newJob);
   res.send(retVal);
 });
 
+app.post("/api/tenant/edit_job", async function (req, res) {
+  //console.log(req.body)
+  const retVal = await firestore.editJob(req.body.jobID, req.body.newJob, req.body.companyName)
+});
 /**
  * Deletes a list of jobs.
- * @param {req.body} the list of jobs to delete
+ * @param {req.body} the list of jobs to delete.
  * @return {retVal} String signaling if all jobs have been deleted.
  */
 app.post("/api/tenant/delete_jobs", async function (req, res) {
@@ -88,12 +100,21 @@ app.post("/api/tenant/delete_jobs", async function (req, res) {
   res.send("ok");
 });
 
+app.post("/api/get_job_info", async function (req, res) {
+  //console.log(req.body);
+  const jobInfo = await firestore.getJobInfo(req.body.id, req.body.companyName);
+  res.send({ jobInfo });
+});
 
 app.post("/api/tenant/add_AppliedJob", async function (req, res) {
   console.log(req.body.employeeEmail);
   console.log(req.body.jobId);
   console.log(req.body.companyName);
-  const retVal = await firestore.addAppliedJob(req.body.employeeEmail, req.body.companyName, req.body.jobId);
+  const retVal = await firestore.addAppliedJob(
+    req.body.employeeEmail,
+    req.body.companyName,
+    req.body.jobId
+  );
   res.send("ok");
 });
 

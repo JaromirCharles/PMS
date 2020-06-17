@@ -20,14 +20,14 @@ function registerEmployee(employee) {
   // add employee to employees collection
   db.collection("employees")
     .doc(employee.employee.email)
-    .set(employee.employee) 
+    .set(employee.employee);
 
   // add employee's email to tenant's employee array
-  db.collection("tenants")
+  /* db.collection("tenants")
     .doc(employee.employee.tenant)
     .update({
       employees: admin.firestore.FieldValue.arrayUnion(employee.employee.email),
-    });
+    }); */
 
   // add employee to login collection
 }
@@ -119,6 +119,67 @@ async function getTenantJobs(companyName) {
   return jobs;
 }
 
+async function addEmpToTenantEmpArray(tenant, email) {
+  db.collection("tenants")
+    .doc(tenant)
+    .update({
+      employees: admin.firestore.FieldValue.arrayUnion(email),
+    });
+}
+
+async function getTenantEmployees(companyName) {
+  var employees = [];
+  var employees_in_tenants_array = [];
+  // get listed employees within tenant's employees array
+  let query = await db
+    .collection("tenants")
+    .doc(companyName)
+    .get()
+    .then((doc) => {
+      if (!doc.exists) {
+        console.log("No such document!");
+      } else {
+        //console.log("Document data:", doc.data().employees);
+        employees_in_tenants_array = doc.data().employees;
+      }
+    });
+
+  // get employee information for each employee in tenant array
+  for (let index = 0; index < employees_in_tenants_array.length; index++) {
+    //console.log("--: ", employees_in_tenants_array[0]);
+    let query = await db
+      .collection("employees")
+      .doc(employees_in_tenants_array[index])
+      .get()
+      .then((doc) => {
+        if (!doc.exists) {
+          console.log("No such document");
+          // employee has no registered as yet.
+          employees.push({
+            name: "",
+            surname: "",
+            email: employees_in_tenants_array[index],
+            status: "Request pending",
+          });
+          //return { name: "-", surname: "-", email: emp, status: "Request pending" };
+        } else {
+          //console.log("found: ", doc.data());
+          // employee has already registered under this email
+          employees.push({
+            name: doc.data().name,
+            surname: doc.data().surname,
+            email: doc.data().email,
+            status: "active",
+          });
+          //return { name: doc.data().name, surname: doc.data().surname, email: emp, status: "active" };
+          //console.log("--------: ", employees);
+        }
+      });
+  }
+
+  return employees;
+}
+
 async function createNewJob(job) {
   var retVal = "failed";
   //db.collection("tenants").doc(job.tenant.companyName).set(tenantUpdate);
@@ -146,10 +207,45 @@ async function deleteJobs(jobs) {
 
 async function addAppliedJob(employeeEmail, companyName, jobReferenceId) {
   db.collection("employees")
-  .doc(employeeEmail)
-  .update({
-    appliedJobs: admin.firestore.FieldValue.arrayUnion(jobReferenceId),
-  });
+    .doc(employeeEmail)
+    .update({
+      appliedJobs: admin.firestore.FieldValue.arrayUnion(jobReferenceId),
+    });
+}
+
+async function getJobInfo(jobID, companyName) {
+  var jobInfo = {};
+  let query = await db
+    .collection("tenants")
+    .doc(companyName)
+    .collection("jobs")
+    .doc(jobID)
+    .get()
+    .then((doc) => {
+      if (!doc.exists) {
+        console.log("No such document!");
+      } else {
+        //console.log('Document data: ', doc.data());
+        jobInfo = doc.data();
+      }
+    })
+    .catch((err) => {
+      console.log("Error getting document", err);
+    });
+  //console.log("collection Info: ", jobInfo);
+  return jobInfo;
+}
+
+async function editJob(jobID, jobInfo, companyName) {
+  console.log("jobID: ", jobID);
+  console.log("jobInfo", jobInfo);
+  console.log("companyName", companyName);
+  await db
+    .collection("tenants")
+    .doc(companyName)
+    .collection("jobs")
+    .doc(jobID)
+    .update(jobInfo);
 }
 
 module.exports = {
@@ -161,4 +257,8 @@ module.exports = {
   createNewJob,
   deleteJobs,
   addAppliedJob,
+  getJobInfo,
+  editJob,
+  addEmpToTenantEmpArray,
+  getTenantEmployees,
 };
