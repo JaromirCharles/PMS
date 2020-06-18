@@ -23,6 +23,7 @@ import AccountBoxIcon from "@material-ui/icons/AccountBox";
 import { Tooltip } from "@material-ui/core";
 import { Redirect } from "react-router-dom";
 import EmployeeView from "../employee/EmployeeView";
+import AppliedJobsView from "../employee/AppliedJobsView";
 
 const drawerWidth = 240;
 
@@ -96,7 +97,9 @@ function EmployeePersistentDrawer(props) {
   const [companyName] = useState(props.match.params.tenant);
 
   useEffect(() => {
-    console.log("ComponentDidMount");
+    console.log("ComponentDidMount: EmployeePersistentDrawer " + currentMenu);
+
+    
   });
 
   const handleDrawerOpen = () => {
@@ -115,6 +118,23 @@ function EmployeePersistentDrawer(props) {
   const onLogout = () => {
     console.log("Clicked Logout");
     setLogout(true);
+  };
+
+  const matchView = () => {
+    switch (currentMenu) {
+      case "Available Jobs":
+        return (
+          <EmployeeView companyName={companyName} employeeEmail={props.location.state.email} />
+        );
+      case "Applied Jobs":
+        return (
+          <AppliedJobsView companyName={companyName} employeeEmail={props.location.state.email} />
+        );
+      default:
+        return (
+          <EmployeeView companyName={companyName} employeeEmail={props.location.state.email} />
+        );
+    }
   };
 
 
@@ -237,8 +257,9 @@ function EmployeePersistentDrawer(props) {
           <Typography variant="subtitle1" paragraph>
             {currentMenu}
           </Typography>
+
           {/* call rest of body put table */}
-          <EmployeeView currentView={currentMenu} companyName={companyName} employeeEmail={props.location.state.email} />
+          { matchView() }
         </main>
       </div>
     );

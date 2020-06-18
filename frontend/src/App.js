@@ -15,7 +15,6 @@ function App() {
         <Route path="/" exact component={Homepage} />
         <Route path="/login" exact component={LoginForm} />
         <Route path="/register" exact component={RegistrationForm} />
-        
         <Route path="/:tenant/jobs" exact component={TenantPersistentDrawer} />
         <Route path="/:tenant/employees" exact component={TenantPersistentDrawer} />
         <Route path="/employee/:tenant" exact component={EmployeePersistentDrawer} />

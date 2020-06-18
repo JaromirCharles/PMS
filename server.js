@@ -106,10 +106,7 @@ app.post("/api/get_job_info", async function (req, res) {
   res.send({ jobInfo });
 });
 
-app.post("/api/tenant/add_AppliedJob", async function (req, res) {
-  console.log(req.body.employeeEmail);
-  console.log(req.body.jobId);
-  console.log(req.body.companyName);
+app.post("/api/employee/add_AppliedJob", async function (req, res) {
   const retVal = await firestore.addAppliedJob(
     req.body.employeeEmail,
     req.body.companyName,
@@ -117,6 +114,24 @@ app.post("/api/tenant/add_AppliedJob", async function (req, res) {
   );
   res.send("ok");
 });
+
+app.post("/api/employee/get_AppliedJobs", async function (req, res) {
+  const appliedJobs = await firestore.getAppliedJobs(
+    req.body.employeeEmail,
+    req.body.companyName,
+  );
+  res.send(appliedJobs)
+});
+
+app.post("/api/employee/cancel_AppliedJob", async function (req, res) {
+  const appliedJobs = await firestore.cancelAppliedJobs(
+    req.body.employeeEmail,
+    req.body.companyName,
+    req.body.jobId
+  );
+  res.send("ok")
+});
+
 
 // console.log that the server is up and running
 app.listen(port, () => console.log(`Listening on port ${port}`));

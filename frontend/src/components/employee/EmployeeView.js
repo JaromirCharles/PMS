@@ -56,24 +56,19 @@ const columns = [
   { id: "empty", label: "" },
 ];
 
-export default function EmployeeView({ cView, companyName, employeeEmail }) {
-  const [tableData, setTableData] = useState([]);
-  const [currentView] = useState([cView]);
-  const [showPopup, setShowPopup] = useState(false);
+export default function EmployeeView({ companyName, employeeEmail }) {
+
   const [availableJobs, setAvailableJobs] = useState([]);
   const classes = useStyles();
 
   useEffect(() => {
-    console.log("componentDidMount", currentView);
-    // retrieve data from database
+    console.log("::::");
+    console.log("componentDidMount EmployeeView");
     fetchAvailableJobs();
-    var rows = createEmployeeData();
-    setTableData(rows);
-
-    createEmployeeData();
   }, []);
 
   const fetchAvailableJobs = async () => {
+    console.log("fetchAvailableJobs");
     const data = await fetch("/api/tenant_jobs", {
       method: "POST",
       headers: {
@@ -86,46 +81,8 @@ export default function EmployeeView({ cView, companyName, employeeEmail }) {
     setAvailableJobs(retJobs);
   };
 
-  function createEmployeeData() {
-    const rows = [
-      createData(
-        "Rammstein",
-        "Construction and Dismantling ...",
-        "Stuttgart",
-        "08:00 - 20:00",
-        "apply"
-      ),
-      createData(
-        "Ninja Warrior",
-        "Cleaning up the splashed water.",
-        "Zurich",
-        "09:00 - 21:00",
-        "apply"
-      ),
-      createData("...", "...", "...", "...", "..."),
-      createData("...", "...", "...", "...", "..."),
-      createData("...", "...", "...", "...", "..."),
-    ];
-    return rows;
-  }
-
-  function createData(jobTitle, description, location, startAndEndTime, empty) {
-    return { jobTitle, description, location, startAndEndTime, empty };
-  }
-
-  const handleJobClick = (event, name) => {
-    /* 
-        TODO: id instead of name as argument. new popup, fetch job information from the 
-        specified id and display it.
-      */
-    console.log("Clicked: ", name);
-    setShowPopup(true);
-  };
-
   const handleApplyClick = async (event, jobId) => {
-    //console.log(employeeEmail);
-    //console.log(jobId);
-    const response = await fetch("/api/tenant/add_AppliedJob", {
+    const response = await fetch("/api/employee/add_AppliedJob", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -136,70 +93,47 @@ export default function EmployeeView({ cView, companyName, employeeEmail }) {
     if (response.status !== 200) throw Error(body.message);
   }
 
+
   return (
     <Fragment>
-      <TableContainer component={Paper}>
-        <Table className={classes.table} aria-label="customized table">
-          <TableHead>
-            <TableRow>
-              {columns.map((column) => (
-                <StyledTableCell key={column.id}>
-                  {column.label}
-                </StyledTableCell>
-              ))}
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {/* {tableData.map((row) => (
-              <StyledTableRow
-                onClick={(event) => handleJobClick(event, row.jobTitle)}
-                key={row.jobTitle}
-              >
-                <StyledTableCell
-                  className={classes.hover}
-                  component="th"
-                  scope="row"
-                  hover
-                >
-                  {row.jobTitle}
-                </StyledTableCell>
-                <StyledTableCell>{row.description}</StyledTableCell>
-                <StyledTableCell>{row.location}</StyledTableCell>
-                <StyledTableCell>{row.startAndEndTime}</StyledTableCell>
-
-                <StyledTableCell className={classes.applyHover}>
-                  {row.empty}
-                </StyledTableCell>
-              </StyledTableRow>
-            ))} */}
-            {availableJobs.map((row) => (
-              <StyledTableRow
-                //onClick={(event) => handleJobClick(event, row.id)}
-                key={row.id}
-              >
-                <StyledTableCell
-                  className={classes.hover}
-                  component="th"
-                  scope="row"
-                  hover
-                >
-                  {row.title}
-                </StyledTableCell>
-                <StyledTableCell>{row.description}</StyledTableCell>
-                <StyledTableCell>{row.location}</StyledTableCell>
-                <StyledTableCell>{row.startAndEndTime}</StyledTableCell>
-
-                <StyledTableCell className={classes.applyHover}
-                  onClick={(event) => handleApplyClick(event, row.id)}
-                >
-                  apply
-                </StyledTableCell>
-              </StyledTableRow>
+    <TableContainer component={Paper}>
+      <Table className={classes.table} aria-label="customized table">
+        <TableHead>
+          <TableRow>
+            {columns.map((column) => (
+              <StyledTableCell key={column.id}>
+                {column.label}
+              </StyledTableCell>
             ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-      {showPopup === true ? <JobPopup /> : null}
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {availableJobs.map((row) => (
+            <StyledTableRow
+              key={row.id}
+            >
+              <StyledTableCell
+                className={classes.hover}
+                component="th"
+                scope="row"
+                hover
+              >
+                {row.title}
+              </StyledTableCell>
+              <StyledTableCell>{row.description}</StyledTableCell>
+              <StyledTableCell>{row.location}</StyledTableCell>
+              <StyledTableCell>{row.startAndEndTime}</StyledTableCell>
+              
+              <StyledTableCell className={classes.applyHover} 
+                onClick={(event) => handleApplyClick(event, row.id)}
+              >
+                apply
+              </StyledTableCell>
+            </StyledTableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </TableContainer>
     </Fragment>
   );
 }

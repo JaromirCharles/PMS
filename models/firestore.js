@@ -213,6 +213,43 @@ async function addAppliedJob(employeeEmail, companyName, jobReferenceId) {
     });
 }
 
+
+async function getAppliedJobs(employeeEmail, companyName) {
+  var appliedJobs_array = [];
+  var jobs = [];
+  let query = await db.collection("employees")
+    .doc(employeeEmail)
+    .get()
+    .then((doc) => {
+      if (doc.exists) {
+        appliedJobs_array = doc.data().appliedJobs;
+        console.log("Document data:", appliedJobs_array);
+      } else {
+        console.log("No applied Jobs");
+      }
+    });
+  console.log(companyName);
+  console.log("_____");
+  console.log(companyName);
+
+  for (let idx = 0; idx < appliedJobs_array.length; idx++) {
+    let query = await db.collection("tenants")
+    .doc(companyName)
+    .collection("jobs")
+    .doc(appliedJobs_array[idx])
+    .get()
+    .then((doc) => {
+      jobs.push({ ...doc.data(), id: doc.id });
+      console.log(doc.data());
+    });
+  }
+
+  console.log(jobs);
+
+
+  return jobs;
+}
+
 async function getJobInfo(jobID, companyName) {
   var jobInfo = {};
   let query = await db
@@ -257,6 +294,7 @@ module.exports = {
   createNewJob,
   deleteJobs,
   addAppliedJob,
+  getAppliedJobs,
   getJobInfo,
   editJob,
   addEmpToTenantEmpArray,
