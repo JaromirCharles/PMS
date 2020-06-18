@@ -89,6 +89,7 @@ app.post("/api/tenant/create_job", async function (req, res) {
 app.post("/api/tenant/edit_job", async function (req, res) {
   //console.log(req.body)
   const retVal = await firestore.editJob(req.body.jobID, req.body.newJob, req.body.companyName)
+  res.send("ok");
 });
 /**
  * Deletes a list of jobs.
