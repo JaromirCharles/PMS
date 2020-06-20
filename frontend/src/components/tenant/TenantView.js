@@ -67,26 +67,28 @@ const columns = [
   { id: "members", label: "Members" },
 ];
 
-export default function TenantView({ companyName, parentCreateJobCallback }) {
-  const [tableData, setTableData] = useState([]);
+export default function TenantView({
+  companyName,
+  parentCancelCallback,
+  parentCreateJobCallback,
+}) {
   const classes = useStyles();
   const [deleteJobList, updateDeleteJobList] = useState([]);
   const [jobs, setJobs] = useState([]);
   const [editJob, setEditJob] = useState(false);
   const [jobIDToEdit, setJobIDToEdit] = useState("");
   const [retrievedJob, setRetrievedJob] = useState({});
+  const [refresh, setRefresh] = useState(true);
+  const [clickTitle, setClickTitle] = useState(false);
 
   useEffect(() => {
     console.log("componentDidMount with name: ", companyName);
     // retrieve company's jobs from firebase firestore
     fetchJobs();
 
-    /* var rows = createEmployeeData();
-    setTableData(rows);
-    createEmployeeData(); */
-    // ependency might cause a problem.
+    // dependency might cause a problem.
     // Keep an eye out on the components behavior.
-  }, [deleteJobList]);
+  }, [deleteJobList, refresh]);
 
   const fetchJobs = async () => {
     const data = await fetch("/api/tenant_jobs", {
@@ -97,7 +99,7 @@ export default function TenantView({ companyName, parentCreateJobCallback }) {
       body: JSON.stringify({ tenant: { companyName } }),
     });
     const retJobs = await data.json();
-    console.log(retJobs);
+    //console.log(retJobs);
     setJobs(retJobs);
   };
 
@@ -118,41 +120,9 @@ export default function TenantView({ companyName, parentCreateJobCallback }) {
     setRetrievedJob(job.jobInfo);
   };
 
-  function createEmployeeData() {
-    console.log(jobs.size);
-    const rows = [
-      createData(
-        "Rammstein",
-        "Construction and Dismantling ...",
-        "Stuttgart",
-        "08:00 - 20:00",
-        "5/7"
-      ),
-      createData(
-        "Ninja Warrior",
-        "Cleaning up the splashed water.",
-        "Zurich",
-        "09:00 - 21:00",
-        "0/5"
-      ),
-      createData("...", "...", "...", "...", "..."),
-      createData("....", "...", "...", "...", "..."),
-      createData(".....", "...", "...", "...", "..."),
-    ];
-    return rows;
-  }
-
   function createData(jobTitle, description, location, startAndEndTime, empty) {
     return { jobTitle, description, location, startAndEndTime, empty };
   }
-
-  const handleJobClick = (event, name) => {
-    /* 
-          TODO: id instead of name as argument. new popup, fetch job information from the 
-          specified id and display it.
-        */
-    console.log("Clicked: ", name);
-  };
 
   const onCreateJob = () => {
     parentCreateJobCallback(true);
@@ -196,7 +166,11 @@ export default function TenantView({ companyName, parentCreateJobCallback }) {
   };
 
   function parentCallback() {
+    console.log("here")
+    parentCancelCallback(true);
+    setRefresh(!refresh);
     setEditJob(false);
+    setClickTitle(false);
   }
 
   function EditJobView() {
@@ -207,8 +181,15 @@ export default function TenantView({ companyName, parentCreateJobCallback }) {
         companyName={companyName}
         parentCancelCallback={parentCallback}
         header={"Edit"}
+        showWorkersList={onClickTitle? true : false}
       />
     );
+  }
+
+  function onClickTitle(id) {
+    console.log("open Job information for: ", id)
+    setClickTitle(true);
+    onClickEdit(id);
   }
 
   if (editJob) {
@@ -260,34 +241,7 @@ export default function TenantView({ companyName, parentCreateJobCallback }) {
                 ))}
               </TableRow>
             </TableHead>
-            {/* <TableBody>
-            {tableData.map((row) => (
-              <StyledTableRow key={row.jobTitle}>
-                <Checkbox
-                  inputProps={{ "aria-label": "uncontrolled-checkbox" }}
-                  size="small"
-                  onChange={(event) => {
-                    event.target.checked
-                      ? addJobToDeleteList(row.jobTitle)
-                      : removeJobFromDeleteList(row.jobTitle);
-                  }}
-                />
-                <StyledTableCell
-                  className={classes.hover}
-                  component="th"
-                  scope="row"
-                  hover="true"
-                >
-                  {row.jobTitle}
-                </StyledTableCell>
-                <StyledTableCell>{row.description}</StyledTableCell>
-                <StyledTableCell>{row.location}</StyledTableCell>
-                <StyledTableCell>{row.startAndEndTime}</StyledTableCell>
 
-                <StyledTableCell>{row.empty}</StyledTableCell>
-              </StyledTableRow>
-            ))}
-          </TableBody> */}
             <TableBody>
               {jobs.map((row) => (
                 <StyledTableRow key={row.id}>
@@ -313,6 +267,7 @@ export default function TenantView({ companyName, parentCreateJobCallback }) {
                     component="th"
                     scope="row"
                     hover="true"
+                    onClick={() => onClickTitle(row.id)}
                   >
                     {row.title}
                   </StyledTableCell>

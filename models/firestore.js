@@ -127,6 +127,59 @@ async function addEmpToTenantEmpArray(tenant, email) {
     });
 }
 
+async function getAppliedWorkers(company, jobID) {
+  console.log("getAppliedWorkers for %s %s", company, jobID);
+  var appliedWorkers = [];
+  var employees_in_tenants_array = [];
+  let query = await db
+    .collection("tenants")
+    .doc(company)
+    .get()
+    .then((doc) => {
+      if (!doc.exists) {
+        console.log("No such document!");
+      } else {
+        employees_in_tenants_array = doc.data().employees;
+      }
+    });
+  console.log("%s employees: ", company, employees_in_tenants_array);
+
+  for (let index = 0; index < employees_in_tenants_array.length; index++) {
+    let query = await db
+      .collection("employees")
+      .doc(employees_in_tenants_array[index])
+      .get()
+      .then((doc) => {
+        if (!doc.exists) {
+          console.log("No document for: ", employees_in_tenants_array[index]);
+        } else {
+          if (typeof doc.data().appliedJobs !== "undefined") {
+            const jobs = doc.data().appliedJobs;
+            if (jobs.includes(jobID)) {
+              console.log("FOUND WORKER");
+              appliedWorkers.push({
+                name: doc.data().name,
+                surname: doc.data().surname,
+                email: doc.data().email,
+              });
+            }
+          }
+        }
+      });
+  }
+  /* let applied = await db
+    .collection("employees")
+    .where("appliedJobs", "array-contains", "Cl0OBNXtaVg0zqvkbkLe").get().then((doc) => {
+      if (!doc.exists) {
+        console.log("asdfasdf")
+      } else {
+
+        console.log(doc.data())
+      }
+    }); */
+  return appliedWorkers;
+}
+
 async function getTenantEmployees(companyName) {
   var employees = [];
   var employees_in_tenants_array = [];
@@ -213,11 +266,11 @@ async function addAppliedJob(employeeEmail, companyName, jobReferenceId) {
     });
 }
 
-
 async function getAppliedJobs(employeeEmail, companyName) {
   var appliedJobs_array = [];
   var jobs = [];
-  let query = await db.collection("employees")
+  let query = await db
+    .collection("employees")
     .doc(employeeEmail)
     .get()
     .then((doc) => {
@@ -230,15 +283,16 @@ async function getAppliedJobs(employeeEmail, companyName) {
     });
 
   for (let idx = 0; idx < appliedJobs_array.length; idx++) {
-    let query = await db.collection("tenants")
-    .doc(companyName)
-    .collection("jobs")
-    .doc(appliedJobs_array[idx])
-    .get()
-    .then((doc) => {
-      jobs.push({ ...doc.data(), id: doc.id });
-      console.log(doc.data());
-    });
+    let query = await db
+      .collection("tenants")
+      .doc(companyName)
+      .collection("jobs")
+      .doc(appliedJobs_array[idx])
+      .get()
+      .then((doc) => {
+        jobs.push({ ...doc.data(), id: doc.id });
+        console.log(doc.data());
+      });
   }
   return jobs;
 }
@@ -247,8 +301,7 @@ async function cancelAppliedJob(employeeEmail, companyName, jobId) {
   var jobRef = await db.collection("employees").doc(employeeEmail);
   var jobRefGet = await db.collection("employees").doc(employeeEmail).get();
   console.log("___: ", jobRefGet);
-  jobRef.update( 
-    {"appliedJobs": admin.firestore.FieldValue.arrayRemove(jobId)});
+  jobRef.update({ appliedJobs: admin.firestore.FieldValue.arrayRemove(jobId) });
   console.log("___: ", jobRefGet);
 }
 
@@ -302,4 +355,5 @@ module.exports = {
   addEmpToTenantEmpArray,
   getTenantEmployees,
   cancelAppliedJob,
+  getAppliedWorkers,
 };

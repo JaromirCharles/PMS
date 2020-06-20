@@ -133,6 +133,7 @@ function TenantPersistentDrawer({ match }) {
     console.log("Clicked Menu Item: Employees");
     window.localStorage.setItem("view", "employees");
     setView("employees");
+    // ---- delete
     setCurrentMenu("");
     setJobsView(false);
     setCreateJob(false);
@@ -145,7 +146,9 @@ function TenantPersistentDrawer({ match }) {
   };
 
   const createJobCallback = (value) => {
-    console.log("Received from child", value);
+    window.localStorage.setItem("view", "createJob");
+    setView("createJob");
+    // ---- delete
     setCurrentMenu("");
     setCreateJob(value);
     setJobsView(false);
@@ -153,6 +156,9 @@ function TenantPersistentDrawer({ match }) {
 
   const cancelCreateJobCallback = (value) => {
     setCurrentMenu("Jobs in System");
+    window.localStorage.setItem("view", "jobs");
+    setView("jobs");
+    // ---- delete
     setJobsView(true);
     setCreateJob(false);
   };
@@ -163,6 +169,7 @@ function TenantPersistentDrawer({ match }) {
         return (
           <TenantView
             parentCreateJobCallback={createJobCallback}
+            parentCancelCallback={cancelCreateJobCallback}
             companyName={companyName}
           />
         );
@@ -281,9 +288,9 @@ function TenantPersistentDrawer({ match }) {
           })}
         >
           <div className={classes.drawerHeader} />
-          <Typography variant="subtitle1" paragraph>
+          {/* <Typography variant="subtitle1" paragraph>
             {currentMenu}
-          </Typography>
+          </Typography> */}
 
           {matchView()}
 

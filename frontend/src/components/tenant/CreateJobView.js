@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import TextField from "@material-ui/core/TextField";
 import AttachFileIcon from "@material-ui/icons/AttachFile";
@@ -7,6 +7,7 @@ import Toolbar from "@material-ui/core/Toolbar";
 import Typography from "@material-ui/core/Typography";
 import Paper from "@material-ui/core/Paper";
 import Button from "@material-ui/core/Button";
+import TransferList from "./TransferList";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -30,7 +31,14 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function CreateJobView({ companyName, parentCancelCallback }) {
+export default function CreateJobView({
+  jobID,
+  job,
+  companyName,
+  parentCancelCallback,
+  header,
+  showWorkersList,
+}) {
   const classes = useStyles();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -38,8 +46,16 @@ export default function CreateJobView({ companyName, parentCancelCallback }) {
   const [startAndEndTime, setStartAndEndTime] = useState("");
   const [nrWorkers, setNrWorkers] = useState(0);
 
+  useEffect(() => {
+    console.log("showWorkersList: ", showWorkersList)
+    setTitle(job.title)
+    setDescription(job.description)
+    setLocation(job.location)
+    setStartAndEndTime(job.startAndEndTime)
+    setNrWorkers(job.nrWorkersNeeded)
+  }, []);
+
   const onClickCancel = () => {
-    console.log("Clicked cancel");
     parentCancelCallback(true);
   };
 
@@ -59,19 +75,36 @@ export default function CreateJobView({ companyName, parentCancelCallback }) {
     };
 
     // call to api to persist new job to firebase firestore
-    const response = await fetch("/api/tenant/create_job", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ newJob: { newJob, tenant: { companyName } } }),
-    });
-    const body = await response.text();
-    if (response.status !== 200) throw Error(body.message);
+    if (job === "") {
+      const response = await fetch("/api/tenant/create_job", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ newJob: { newJob, tenant: { companyName } } }),
+      });
+      const body = await response.text();
+      if (response.status !== 200) throw Error(body.message);
+    } else {
+      const response = await fetch("/api/tenant/edit_job", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ jobID, newJob, companyName }),
+      });
+      const body = await response.text();
+      if (response.status !== 200) throw Error(body.message);
+    }
+    parentCancelCallback(true);
   };
 
   const isDisabled = () => {
-    return !(title && description && location && startAndEndTime && nrWorkers);
+    if (job !== "") {
+      return false
+    } else {
+      return !(title && description && location && startAndEndTime && nrWorkers);
+    }
   };
 
   return (
@@ -81,7 +114,7 @@ export default function CreateJobView({ companyName, parentCancelCallback }) {
           <AppBar position="relative" color="primary">
             <Toolbar>
               <Typography variant="h6" color="inherit">
-                Create New Job
+                {header ? header : "Create New Job"}
               </Typography>
             </Toolbar>
           </AppBar>
@@ -90,10 +123,11 @@ export default function CreateJobView({ companyName, parentCancelCallback }) {
         <form className={classes.form} noValidate autoComplete="off">
           <TextField
             id="title"
-            label="Title"
-            defaultValue={title}
+            label="title"
+            defaultValue={job === "" ? title : job.title}
             variant="outlined"
             margin="normal"
+            disabled={showWorkersList}
             //required={true}
             InputLabelProps={{
               shrink: true,
@@ -108,7 +142,7 @@ export default function CreateJobView({ companyName, parentCancelCallback }) {
           <TextField
             id="description"
             label="Description"
-            defaultValue={description}
+            defaultValue={job === "" ? description : job.description}
             multiline={true}
             rowsMax={4}
             placeholder=""
@@ -127,7 +161,7 @@ export default function CreateJobView({ companyName, parentCancelCallback }) {
           <TextField
             id="location"
             label="Location"
-            defaultValue={location}
+            defaultValue={job === "" ? location : job.location}
             variant="outlined"
             InputLabelProps={{
               shrink: true,
@@ -143,7 +177,7 @@ export default function CreateJobView({ companyName, parentCancelCallback }) {
           <TextField
             id="startandendtime"
             label="Start & End Time"
-            defaultValue={startAndEndTime}
+            defaultValue={job === "" ? startAndEndTime : job.startAndEndTime}
             variant="outlined"
             InputLabelProps={{
               shrink: true,
@@ -161,7 +195,7 @@ export default function CreateJobView({ companyName, parentCancelCallback }) {
             label="# Workers"
             type="number"
             margin="normal"
-            defaultValue={nrWorkers}
+            defaultValue={job === "" ? nrWorkers : job.nrWorkersNeeded}
             InputLabelProps={{
               shrink: true,
             }}
@@ -169,12 +203,11 @@ export default function CreateJobView({ companyName, parentCancelCallback }) {
             size="small"
             onChange={(event) => {
               const { value } = event.target;
-              setNrWorkers(value)
+              setNrWorkers(value);
             }}
           />
           <br></br>
-
-          <Button
+            {showWorkersList ?null: <Button
             className={classes.button}
             variant="contained"
             color="default"
@@ -182,7 +215,11 @@ export default function CreateJobView({ companyName, parentCancelCallback }) {
             startIcon={<AttachFileIcon color="inherit" />}
           >
             Attach Files
-          </Button>
+          </Button>}
+
+          {showWorkersList ? <TransferList jobID={jobID} companyName={companyName}/> : null}
+
+          
           <br></br>
           <Button
             className={classes.button}
