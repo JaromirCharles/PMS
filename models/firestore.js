@@ -228,9 +228,6 @@ async function getAppliedJobs(employeeEmail, companyName) {
         console.log("No applied Jobs");
       }
     });
-  console.log(companyName);
-  console.log("_____");
-  console.log(companyName);
 
   for (let idx = 0; idx < appliedJobs_array.length; idx++) {
     let query = await db.collection("tenants")
@@ -243,11 +240,16 @@ async function getAppliedJobs(employeeEmail, companyName) {
       console.log(doc.data());
     });
   }
-
-  console.log(jobs);
-
-
   return jobs;
+}
+
+async function cancelAppliedJob(employeeEmail, companyName, jobId) {
+  var jobRef = await db.collection("employees").doc(employeeEmail);
+  var jobRefGet = await db.collection("employees").doc(employeeEmail).get();
+  console.log("___: ", jobRefGet);
+  jobRef.update( 
+    {"appliedJobs": admin.firestore.FieldValue.arrayRemove(jobId)});
+  console.log("___: ", jobRefGet);
 }
 
 async function getJobInfo(jobID, companyName) {
@@ -299,4 +301,5 @@ module.exports = {
   editJob,
   addEmpToTenantEmpArray,
   getTenantEmployees,
+  cancelAppliedJob,
 };

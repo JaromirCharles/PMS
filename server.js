@@ -125,7 +125,7 @@ app.post("/api/employee/get_AppliedJobs", async function (req, res) {
 });
 
 app.post("/api/employee/cancel_AppliedJob", async function (req, res) {
-  const appliedJobs = await firestore.cancelAppliedJobs(
+  const appliedJobs = await firestore.cancelAppliedJob(
     req.body.employeeEmail,
     req.body.companyName,
     req.body.jobId
