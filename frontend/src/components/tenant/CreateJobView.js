@@ -47,12 +47,12 @@ export default function CreateJobView({
   const [nrWorkers, setNrWorkers] = useState(0);
 
   useEffect(() => {
-    console.log("showWorkersList: ", showWorkersList)
-    setTitle(job.title)
-    setDescription(job.description)
-    setLocation(job.location)
-    setStartAndEndTime(job.startAndEndTime)
-    setNrWorkers(job.nrWorkersNeeded)
+    console.log("showWorkersList: ", showWorkersList);
+    setTitle(job.title);
+    setDescription(job.description);
+    setLocation(job.location);
+    setStartAndEndTime(job.startAndEndTime);
+    setNrWorkers(job.nrWorkersNeeded);
   }, []);
 
   const onClickCancel = () => {
@@ -60,11 +60,29 @@ export default function CreateJobView({
   };
 
   const onClickSave = async () => {
+    if (showWorkersList) {
+      console.log("do nothing")
+      parentCancelCallback(true);
+      return;
+    }
     console.log(`Title: ${title}\n
       Description: ${description}\n
       Location: ${location}\n
       Start & End Time: ${startAndEndTime}\n
       # Workers: ${nrWorkers}`);
+    const selectedWorkers = [];
+    if (showWorkersList) {
+      const data = await fetch("/api/tenant_selected_workers", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ companyName, jobID }),
+      });
+      const selectedWorkers = await data.json();
+    }
+
+    // TODO OUTPUT selectedworkers before saving. see whats stored in it
 
     const newJob = {
       title: title,
@@ -72,6 +90,7 @@ export default function CreateJobView({
       location: location,
       startAndEndTime: startAndEndTime,
       nrWorkersNeeded: nrWorkers,
+      selectedWorkers: selectedWorkers,
     };
 
     // call to api to persist new job to firebase firestore
@@ -101,9 +120,15 @@ export default function CreateJobView({
 
   const isDisabled = () => {
     if (job !== "") {
-      return false
+      return false;
     } else {
-      return !(title && description && location && startAndEndTime && nrWorkers);
+      return !(
+        title &&
+        description &&
+        location &&
+        startAndEndTime &&
+        nrWorkers
+      );
     }
   };
 
@@ -207,19 +232,22 @@ export default function CreateJobView({
             }}
           />
           <br></br>
-            {showWorkersList ?null: <Button
-            className={classes.button}
-            variant="contained"
-            color="default"
-            size="small"
-            startIcon={<AttachFileIcon color="inherit" />}
-          >
-            Attach Files
-          </Button>}
+          {showWorkersList ? null : (
+            <Button
+              className={classes.button}
+              variant="contained"
+              color="default"
+              size="small"
+              startIcon={<AttachFileIcon color="inherit" />}
+            >
+              Attach Files
+            </Button>
+          )}
 
-          {showWorkersList ? <TransferList jobID={jobID} companyName={companyName}/> : null}
+          {showWorkersList ? (
+            <TransferList jobID={jobID} companyName={companyName} />
+          ) : null}
 
-          
           <br></br>
           <Button
             className={classes.button}

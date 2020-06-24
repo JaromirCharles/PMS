@@ -180,6 +180,100 @@ async function getAppliedWorkers(company, jobID) {
   return appliedWorkers;
 }
 
+async function getSelectedWorkers(company, jobID) {
+  var selectedWorkers = [];
+  let query = await db
+    .collection("tenants")
+    .doc(company)
+    .collection("jobs")
+    .doc(jobID)
+    .get()
+    .then((doc) => {
+      if (!doc.exists) {
+        console.log("##################No such document with ID %s", jobID);
+      } else {
+        console.log("##################", doc.data().selectedWorkers);
+        selectedWorkers = doc.data().selectedWorkers;
+      }
+    });
+  console.log("~~: ", await getEmployeesInfo(selectedWorkers));
+  selectedWorkers = await getEmployeesInfo(selectedWorkers);
+  return selectedWorkers;
+}
+
+async function getEmployeesInfo(employeeList) {
+  var workersInfoList = [];
+  for (let index = 0; index < employeeList.length; index++) {
+    let query = await db
+      .collection("employees")
+      .doc(employeeList[index])
+      .get()
+      .then((doc) => {
+        if (!doc.exists) {
+          console.log("No document for: ", employeeList[index]);
+        } else {
+          workersInfoList.push({
+            name: doc.data().name,
+            surname: doc.data().surname,
+            email: doc.data().email,
+          });
+        }
+      });
+  }
+  return workersInfoList;
+}
+
+async function updateSelectedWorkers(company, jobID, action, workers) {
+  //console.log(workers);
+  let jobRef = db
+    .collection("tenants")
+    .doc(company)
+    .collection("jobs")
+    .doc(jobID);
+
+  for (let index = 0; index < workers.length; index++) {
+    console.log("--", workers[index].email);
+    if (action === "add") {
+      // 1) add workers email to job.selectedWorkers
+      jobRef.update({
+        selectedWorkers: admin.firestore.FieldValue.arrayUnion(
+          workers[index].email
+        ),
+        //selectedWorkers: db.FieldValue.arrayUnion(workerEmails),
+      });
+      // 2) add jobID to emp.upcommingJobs
+      db.collection("employees")
+        .doc(workers[index].email)
+        .update({
+          upcommingJobs: admin.firestore.FieldValue.arrayUnion(jobID),
+        });
+      // 3) remove jobID from emp.appliedJobs
+      db.collection("employees")
+        .doc(workers[index].email)
+        .update({ appliedJobs: admin.firestore.FieldValue.arrayRemove(jobID) });
+    } else {
+      // 1) remove workers email from job.selectedWorkers
+      jobRef.update({
+        selectedWorkers: admin.firestore.FieldValue.arrayRemove(
+          workers[index].email
+        ),
+      });
+      // 2) remove jobID from emp.upcommingJobs
+      db.collection("employees")
+        .doc(workers[index].email)
+        .update({
+          upcommingJobs: admin.firestore.FieldValue.arrayRemove(jobID),
+        });
+      // 3) add jobID to emp.appliedJobs
+      db.collection("employees")
+        .doc(workers[index].email)
+        .update({
+          appliedJobs: admin.firestore.FieldValue.arrayUnion(jobID),
+        });
+    }
+  }
+}
+
 async function getTenantEmployees(companyName) {
   var employees = [];
   var employees_in_tenants_array = [];
@@ -356,4 +450,6 @@ module.exports = {
   getTenantEmployees,
   cancelAppliedJob,
   getAppliedWorkers,
+  getSelectedWorkers,
+  updateSelectedWorkers,
 };

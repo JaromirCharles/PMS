@@ -98,6 +98,16 @@ app.post("/api/tenant_applied_workers", async function (req, res) {
   res.send(appliedWorkers);
 });
 
+app.post("/api/tenant_selected_workers", async function (req, res) {
+  console.log("/api/tenant_selected_workers: ", req.body);
+  const selectedWorkers = await firestore.getSelectedWorkers(req.body.companyName, req.body.jobID);
+  res.send(selectedWorkers);
+});
+
+app.post("/api/tenant_update_selected_workers", async function (req, res) {
+  console.log("/api/tenant_update_selected_workers: ", req.body);
+  await firestore.updateSelectedWorkers(req.body.companyName, req.body.jobID, req.body.action, req.body.list);
+})
 /**
  * Deletes a list of jobs.
  * @param {req.body} the list of jobs to delete.

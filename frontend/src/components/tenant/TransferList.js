@@ -55,9 +55,9 @@ export default function TransferList({ jobID, companyName }) {
   useEffect(() => {
     console.log("TransferList loaded with id: ", jobID);
     // get selected workers for job with id jobID
-    fetchSelectedWorkers();
-    const list = ["Jaromir", "b", "c", "d"];
-    setLeft(list);
+     fetchSelectedWorkers();
+    //const list = ["Jaromir", "b", "c", "d"];
+    //setLeft(list);
     // get applied workers for job with id jobID
     fetchAppliedWorkers();
     //const list2 = ["Benny", "e", "f"];
@@ -78,7 +78,7 @@ export default function TransferList({ jobID, companyName }) {
   };
 
   const fetchSelectedWorkers = async () => {
-    const data = await fetch("api/tenant_selected_workers", {
+    const data = await fetch("/api/tenant_selected_workers", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -87,7 +87,8 @@ export default function TransferList({ jobID, companyName }) {
     });
     const selectedWorkers = await data.json();
     console.log("received selected workers: ", selectedWorkers);
-    //setLeft(selectedWorkers);
+    setLeft(selectedWorkers);
+    localStorage.setItem("selectedWorkers", JSON.stringify(selectedWorkers));
   }
 
   const handleToggle = (value) => () => {
@@ -113,16 +114,39 @@ export default function TransferList({ jobID, companyName }) {
     }
   };
 
-  const handleCheckedRight = () => {
+  const handleCheckedRight = async () => {
+    console.log("moving items to right side: ", leftChecked);
     setRight(right.concat(leftChecked));
     setLeft(not(left, leftChecked));
     setChecked(not(checked, leftChecked));
+    const action = "remove";
+    const list = leftChecked;
+    // remove selected workers from db job's selected workers array
+    const data = await fetch("/api/tenant_update_selected_workers", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ companyName, jobID, action, list }),
+    });
   };
 
-  const handleCheckedLeft = () => {
+  const handleCheckedLeft = async () => {
+    console.log("moving items to left side: ", rightChecked)
     setLeft(left.concat(rightChecked));
     setRight(not(right, rightChecked));
     setChecked(not(checked, rightChecked));
+    const action = 'add';
+    const list = rightChecked;
+    // add selected workers to db job's selected workers array
+    const data = await fetch("/api/tenant_update_selected_workers", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ companyName, jobID, action, list }),
+    });
+    //localStorage.setItem("selectedWorkers", JSON.stringify(left));
   };
 
   const customList = (title, items) => (
@@ -153,7 +177,7 @@ export default function TransferList({ jobID, companyName }) {
 
           return (
             <ListItem
-              key={value}
+              key={value.email} // I added .email
               role="listitem"
               button
               onClick={handleToggle(value)}
