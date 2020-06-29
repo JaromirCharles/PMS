@@ -18,6 +18,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 // create a GET route
 app.get("/api/hello", (req, res) => {
+  console.log("Hello from Express")
   res.send({ express: "Hello From Express" });
 });
 
