@@ -11,25 +11,18 @@ let db = admin.firestore();
 
 function registerTenant(tenant) {
   console.log("registerTenant", tenant.state);
-  const tenantUpdate = { ...tenant.state, employees: [] };
+  const tenantUpdate = { ...tenant.state};
   db.collection("tenants").doc(tenant.state.name).set(tenantUpdate);
 }
 
 function registerEmployee(employee) {
   console.log("registerEmployee", employee.employee);
   // add employee to employees collection
-  db.collection("employees")
+  db.collection("tenants")
+    .doc(employee.employee.tenant)
+    .collection("employees")
     .doc(employee.employee.email)
     .set(employee.employee);
-
-  // add employee's email to tenant's employee array
-  /* db.collection("tenants")
-    .doc(employee.employee.tenant)
-    .update({
-      employees: admin.firestore.FieldValue.arrayUnion(employee.employee.email),
-    }); */
-
-  // add employee to login collection
 }
 
 async function checkCredentials(credentials) {
@@ -62,6 +55,43 @@ async function checkCredentials(credentials) {
     });
   return { validate, companyName };
 }
+
+//TODO: instead of checkEmployeeCredentials
+/*
+async function checkEmployeeCredentials2(credentials) {
+  var validate = false;
+  var companyName = "";
+  let credRef = db.collection("tenants");
+  let query = await credRef
+      .get()
+      .then((snapshot) => {
+        if (snapshot.empty) {
+          console.log("No matching documents.");
+          return;
+        }
+        snapshot.forEach((doc) => {
+          let empl = await db
+            .collection("tenants")
+            .doc(doc.id)
+            .collection("employees")
+            .where("email", "==", credentials.email)
+            .get()
+            .then((doc) => {
+              console.log("____");
+              console.log(doc.data().email);
+            })
+        });
+      });
+
+  
+  return { validate, companyName };
+}
+
+async function checkEmployeeCredentialsHelper(credentials) {
+
+
+}
+*/
 
 async function checkEmployeeCredentials(credentials) {
   var validate = false;
@@ -146,6 +176,8 @@ async function getAppliedWorkers(company, jobID) {
 
   for (let index = 0; index < employees_in_tenants_array.length; index++) {
     let query = await db
+      .collection("tenants")
+      .doc(company)
       .collection("employees")
       .doc(employees_in_tenants_array[index])
       .get()
@@ -196,15 +228,17 @@ async function getSelectedWorkers(company, jobID) {
         selectedWorkers = doc.data().selectedWorkers;
       }
     });
-  console.log("~~: ", await getEmployeesInfo(selectedWorkers));
-  selectedWorkers = await getEmployeesInfo(selectedWorkers);
+  console.log("~~: ", await getEmployeesInfo(company, selectedWorkers));
+  selectedWorkers = await getEmployeesInfo(company, selectedWorkers);
   return selectedWorkers;
 }
 
-async function getEmployeesInfo(employeeList) {
+async function getEmployeesInfo(company, employeeList) {
   var workersInfoList = [];
   for (let index = 0; index < employeeList.length; index++) {
     let query = await db
+      .collection("tenants")
+      .doc(company)
       .collection("employees")
       .doc(employeeList[index])
       .get()
@@ -241,16 +275,16 @@ async function updateSelectedWorkers(company, jobID, action, workers) {
         ),
         //selectedWorkers: db.FieldValue.arrayUnion(workerEmails),
       });
-      // 2) add jobID to emp.upcommingJobs
-      db.collection("employees")
+      // 2) add jobID to emp.upcommingJobs & remove jobID from emp.appliedJobs
+      db.collection("tenants")
+        .doc(company)
+        .collection("employees")
         .doc(workers[index].email)
         .update({
           upcommingJobs: admin.firestore.FieldValue.arrayUnion(jobID),
+          appliedJobs: admin.firestore.FieldValue.arrayRemove(jobID),
         });
-      // 3) remove jobID from emp.appliedJobs
-      db.collection("employees")
-        .doc(workers[index].email)
-        .update({ appliedJobs: admin.firestore.FieldValue.arrayRemove(jobID) });
+    
     } else {
       // 1) remove workers email from job.selectedWorkers
       jobRef.update({
@@ -258,71 +292,38 @@ async function updateSelectedWorkers(company, jobID, action, workers) {
           workers[index].email
         ),
       });
-      // 2) remove jobID from emp.upcommingJobs
-      db.collection("employees")
+      // 2) remove jobID from emp.upcommingJobs &  add jobID to emp.appliedJobs
+      db.collection("tenants")
+        .doc(company)
+        .collection("employees")
         .doc(workers[index].email)
         .update({
           upcommingJobs: admin.firestore.FieldValue.arrayRemove(jobID),
-        });
-      // 3) add jobID to emp.appliedJobs
-      db.collection("employees")
-        .doc(workers[index].email)
-        .update({
           appliedJobs: admin.firestore.FieldValue.arrayUnion(jobID),
         });
+  
     }
   }
 }
 
 async function getTenantEmployees(companyName) {
   var employees = [];
-  var employees_in_tenants_array = [];
-  // get listed employees within tenant's employees array
-  let query = await db
+
+  await db
     .collection("tenants")
     .doc(companyName)
+    .collection("employees")
     .get()
-    .then((doc) => {
-      if (!doc.exists) {
-        console.log("No such document!");
-      } else {
-        //console.log("Document data:", doc.data().employees);
-        employees_in_tenants_array = doc.data().employees;
-      }
-    });
-
-  // get employee information for each employee in tenant array
-  for (let index = 0; index < employees_in_tenants_array.length; index++) {
-    //console.log("--: ", employees_in_tenants_array[0]);
-    let query = await db
-      .collection("employees")
-      .doc(employees_in_tenants_array[index])
-      .get()
-      .then((doc) => {
-        if (!doc.exists) {
-          console.log("No such document");
-          // employee has no registered as yet.
-          employees.push({
-            name: "",
-            surname: "",
-            email: employees_in_tenants_array[index],
-            status: "Request pending",
-          });
-          //return { name: "-", surname: "-", email: emp, status: "Request pending" };
-        } else {
-          //console.log("found: ", doc.data());
-          // employee has already registered under this email
+    .then((snapshot) => {
+        snapshot.forEach((doc) => {
           employees.push({
             name: doc.data().name,
             surname: doc.data().surname,
             email: doc.data().email,
             status: "active",
-          });
-          //return { name: doc.data().name, surname: doc.data().surname, email: emp, status: "active" };
-          //console.log("--------: ", employees);
-        }
-      });
-  }
+        })
+      })
+    });
 
   return employees;
 }
@@ -353,7 +354,9 @@ async function deleteJobs(jobs) {
 }
 
 async function addAppliedJob(employeeEmail, companyName, jobReferenceId) {
-  db.collection("employees")
+  db.collection("tenants")
+    .doc(companyName)
+    .collection("employees")
     .doc(employeeEmail)
     .update({
       appliedJobs: admin.firestore.FieldValue.arrayUnion(jobReferenceId),
@@ -364,6 +367,8 @@ async function getAppliedJobs(employeeEmail, companyName) {
   var appliedJobs_array = [];
   var jobs = [];
   let query = await db
+    .collection("tenants")
+    .doc(companyName)
     .collection("employees")
     .doc(employeeEmail)
     .get()
@@ -391,12 +396,10 @@ async function getAppliedJobs(employeeEmail, companyName) {
   return jobs;
 }
 
+
 async function cancelAppliedJob(employeeEmail, companyName, jobId) {
-  var jobRef = await db.collection("employees").doc(employeeEmail);
-  var jobRefGet = await db.collection("employees").doc(employeeEmail).get();
-  console.log("___: ", jobRefGet);
+  var jobRef = await db.collection("tenants").doc(companyName).collection("employees").doc(employeeEmail);
   jobRef.update({ appliedJobs: admin.firestore.FieldValue.arrayRemove(jobId) });
-  console.log("___: ", jobRefGet);
 }
 
 async function getJobInfo(jobID, companyName) {
