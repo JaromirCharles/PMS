@@ -50,20 +50,12 @@ app.post("/api/register", (req, res) => {
 });
 
 app.post("/api/validateLogin", async (req, res) => {
-  const { validate, companyName } = await firestore.checkCredentials(
-    req.body.login.state
-  );
-  //console.log("server.js companyName: ", companyName)
-  res.send({ validate, companyName });
-});
-
-app.post("/api/validateEmployeeLogin", async (req, res) => {
   console.log(req.body);
-  const { validate, companyName } = await firestore.checkEmployeeCredentials(
+  const {user, validate, companyName } = await firestore.checkCredentials(
     req.body.login.state
   );
   console.log(`validate ${validate}, companyName: ${companyName}`);
-  res.send({ validate, companyName });
+  res.send({user, validate, companyName });
 });
 
 app.post("/api/register_employee", async (req, res) => {

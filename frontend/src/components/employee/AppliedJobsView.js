@@ -58,15 +58,8 @@ const StyledTableCell = withStyles((theme) => ({
     { id: "empty", label: "" },
   ];
 
-  function useForceUpdate(){
-    const [value, setValue] = useState(0); // integer state
-    return () => setValue(value => ++value); // update the state to force render
-}
-
-
 export default function AppliedJobsView({ companyName, employeeEmail }) {
     const [appliedJobs, setAppliedJobs] = useState([]);
-    const forceUpdate = useForceUpdate();
     const classes = useStyles();
 
     useEffect(() => {
@@ -74,7 +67,6 @@ export default function AppliedJobsView({ companyName, employeeEmail }) {
         console.log("componentDidMount AppliedJobsView");
         fetchAppliedJobs();
       }, []);
-
 
     const fetchAppliedJobs = async () => {
         console.log("fetchAppliedJobs: " + companyName);
@@ -99,8 +91,7 @@ export default function AppliedJobsView({ companyName, employeeEmail }) {
         });
         const body = await response.text();
         if (response.status !== 200) throw Error(body.message);
-        forceUpdate()
-       // TODO: rerender page
+        fetchAppliedJobs();
       }
 
     return (

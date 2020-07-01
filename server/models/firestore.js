@@ -3,6 +3,7 @@ const admin = require("firebase-admin");
 
 // initialize the firebase firestore sdk
 let serviceAccount = require("../ServiceAccountKey.json");
+const { getLogger } = require("nodemailer/lib/shared");
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
@@ -27,102 +28,56 @@ function registerEmployee(employee) {
 
 async function checkCredentials(credentials) {
   var validate = false;
+  var user = ""
   var companyName = "";
   let credRef = db.collection("tenants");
-  let query = await credRef
+  let tenantRef = await credRef.get();
+
+  //check tenants
+  await credRef
     .where("email", "==", credentials.email)
+    .where("password", "==", credentials.password)
     .get()
-    .then((snapshot) => {
-      if (snapshot.empty) {
+    .then((doc) => {
+      if (doc.empty) {
         console.log("No matching documents.");
         return;
       }
-      snapshot.forEach((doc) => {
-        console.log(doc.id, "=>", doc.data());
-        if (
-          doc.data().email === credentials.email &&
-          doc.data().password === credentials.password
-        ) {
-          validate = true;
-          companyName = doc.data().name;
-        } else {
-          validate = false;
-        }
-      });
+      console.log(doc);
+        user="tenant";
+        validate = true;
+        companyName = doc.docs[0].data().name;   
     })
     .catch((err) => {
       console.log("Error getting documents", err);
     });
-  return { validate, companyName };
-}
 
-//TODO: instead of checkEmployeeCredentials
-/*
-async function checkEmployeeCredentials2(credentials) {
-  var validate = false;
-  var companyName = "";
-  let credRef = db.collection("tenants");
-  let query = await credRef
+  // check employees
+  if(validate === false) {
+    for (let tenant of tenantRef.docs) {
+      console.log(tenant.id, tenant.data());
+      await credRef
+      .doc(tenant.id)
+      .collection("employees")
+      .where("email", "==", credentials.email)
+      .where("password", "==", credentials.password)
       .get()
-      .then((snapshot) => {
-        if (snapshot.empty) {
-          console.log("No matching documents.");
-          return;
-        }
-        snapshot.forEach((doc) => {
-          let empl = await db
-            .collection("tenants")
-            .doc(doc.id)
-            .collection("employees")
-            .where("email", "==", credentials.email)
-            .get()
-            .then((doc) => {
-              console.log("____");
-              console.log(doc.data().email);
-            })
-        });
+      .then((doc) => {
+        user="employee";
+        validate = true;
+        companyName = tenant.id;
+      })
+      .catch((err) => {
+        console.log("Error getting documents", err);
       });
+      
+    }
+    console.log("login: ", user);
+  }
 
-  
-  return { validate, companyName };
+  return { user, validate, companyName };
 }
 
-async function checkEmployeeCredentialsHelper(credentials) {
-
-
-}
-*/
-
-async function checkEmployeeCredentials(credentials) {
-  var validate = false;
-  var companyName = "";
-  let credRef = db.collection("employees");
-  let query = await credRef
-    .where("email", "==", credentials.email)
-    .get()
-    .then((snapshot) => {
-      if (snapshot.empty) {
-        console.log("No matching documents.");
-        return;
-      }
-      snapshot.forEach((doc) => {
-        console.log(doc.id, "=>", doc.data());
-        if (
-          doc.data().email === credentials.email &&
-          doc.data().password === credentials.password
-        ) {
-          validate = true;
-          companyName = doc.data().tenant;
-        } else {
-          validate = false;
-        }
-      });
-    })
-    .catch((err) => {
-      console.log("Error getting documents", err);
-    });
-  return { validate, companyName };
-}
 
 async function getTenantJobs(companyName) {
   var jobs = [];
@@ -440,7 +395,6 @@ async function editJob(jobID, jobInfo, companyName) {
 module.exports = {
   registerTenant,
   checkCredentials,
-  checkEmployeeCredentials,
   registerEmployee,
   getTenantJobs,
   createNewJob,

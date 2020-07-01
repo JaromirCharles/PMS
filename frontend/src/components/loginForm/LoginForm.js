@@ -42,7 +42,7 @@ const useStyles = makeStyles((theme) => ({
 function LoginForm() {
   const classes = useStyles();
   const [redirect, setRedirect] = React.useState(false);
-  const [tabValue, setTabValue] = React.useState(0);
+  const [user, setUser] = React.useState("");
   const [state, setState] = useState({
     email: "",
     password: "",
@@ -60,56 +60,37 @@ function LoginForm() {
   const handleSubmitClick = async (e) => {
     e.preventDefault();
 
-    if (tabValue === 0) {
-      // check database for valid email and password and return company name
-      const response = await fetch("/api/validateLogin", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ login: { state } }),
-      });
-      const body = await response.json();
-      if (response.status !== 200) throw Error(body.message);
-      console.log("body: ", body.validate);
-      if (body.validate === true) {
-        setCompanyName(body.companyName);
-        console.log("setting to true");
-        setRedirect(true);
-      } else {
-        console.log("setting to false");
-        setRedirect(false);
-      }
+
+    const response = await fetch("api/validateLogin", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ login: { state } }),
+    });
+    const body = await response.json();
+    if (response.status !== 200) throw Error(body.message);
+
+    if (body.validate === true) {
+      setCompanyName(body.companyName);
+      setUser(body.user)
+
+      console.log("setting to true");
+      // save user's email to localstorage so that the application always knows which user is currently logged on.
+      //window.localStorage.setItem("user_email", state.email);
+      setRedirect(true);
     } else {
-      // check database for valid employee credentials
-      const response = await fetch("api/validateEmployeeLogin", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ login: { state } }),
-      });
-      const body = await response.json();
-      if (response.status !== 200) throw Error(body.message);
-      if (body.validate === true) {
-        setCompanyName(body.companyName);
-        console.log("setting to true");
-        // save user's email to localstorage so that the application always knows which user is currently logged on.
-        window.localStorage.setItem("user_email", state.email);
-        setRedirect(true);
-      } else {
-        console.log("setting to false");
-        setRedirect(false);
-      }
+      console.log("setting to false");
+      setRedirect(false);
     }
   };
 
-  const handleTabChange = (event, newValue) => {
-    setTabValue(newValue);
+  const handleUserChange = (event, newValue) => {
+    setUser(newValue);
   };
 
   if (redirect) {
-    if (tabValue === 0) {
+    if (user === "tenant") {
       return <Redirect component={Link} to={`/${companyName}/jobs`} />;
     } else {
       return (
@@ -141,14 +122,11 @@ function LoginForm() {
           <form>
             <Paper className={classes.root}>
               <Tabs
-                value={tabValue}
-                onChange={handleTabChange}
                 indicatorColor="primary"
                 textColor="primary"
                 centered
               >
-                <Tab label="Tenant" />
-                <Tab label="Employee" />
+                <Tab label="Login" />
               </Tabs>
             </Paper>
             <div className="form-group text-left">
