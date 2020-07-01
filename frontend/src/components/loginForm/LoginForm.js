@@ -118,17 +118,8 @@ function LoginForm() {
 
         {/* <div className="card col-12 col-lg-4 login-card mt-2 ml-4 mb-4 hv-center"> */}
         <div className={classes.login}>
-          <Typography className={classes.header} variant="h6">Log in to your PMS</Typography>
+          <Typography className={classes.header} variant="h5">Log in to your PMS</Typography>
           <form>
-            <Paper className={classes.root}>
-              <Tabs
-                indicatorColor="primary"
-                textColor="primary"
-                centered
-              >
-                <Tab label="Login" />
-              </Tabs>
-            </Paper>
             <div className="form-group text-left">
               <label htmlFor="exampleInputEmail1">Email</label>
               <input
