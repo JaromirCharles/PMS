@@ -1,11 +1,11 @@
 import React, { useState, Fragment } from "react";
 import Typography from "@material-ui/core/Typography";
 import AppBar from "@material-ui/core/AppBar";
-import { Redirect, Link } from "react-router-dom";
 import { makeStyles } from "@material-ui/core/styles";
 import Toolbar from "@material-ui/core/Toolbar";
 import validate from "validator";
 import Alert from "@material-ui/lab/Alert";
+import { Redirect, Link } from "react-router-dom";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -101,7 +101,6 @@ function RegistrationForm(props) {
 
   const handleSubmitClick = async (e) => {
     e.preventDefault();
-<<<<<<< HEAD
     if (validateInput()) {
       return;
     }
@@ -112,31 +111,24 @@ function RegistrationForm(props) {
       password: password,
     };
 
-=======
-    //sendDetailsToServer()
-    
     const tenant = {
-      name: state.name,
-      email: state.email,
+      name: name,
+      email: email,
     };
-    const password = state.password
->>>>>>> fb5712556805ac10615dedcaffaed714e1577950
+
     const response = await fetch("/api/register", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-<<<<<<< HEAD
-      body: JSON.stringify({ tenant: { registration } }),
-=======
-      body: JSON.stringify( {tenant, password}),
->>>>>>> fb5712556805ac10615dedcaffaed714e1577950
+      body: JSON.stringify({ tenant, password }),
     });
     const body = await response.text();
     if (response.status !== 200) {
-      console.log("received error from server: ", body.message);
+      //console.log("received error from server: ", body.message);
       //throw Error(body.message);
     }
+
     if (body === "true") {
       setShowAlert(true);
       setAlertMsg("Success! Redirecting to homepage ...");
@@ -163,11 +155,7 @@ function RegistrationForm(props) {
         </Fragment>
         <div className={classes.register}>
           <p className="h5 text-center login-heading">Sign up</p>
-          {showAlert ? (
-            <Alert severity="success">
-              {alertMsg}
-            </Alert>
-          ) : null}
+          {showAlert ? <Alert severity="success">{alertMsg}</Alert> : null}
           <form>
             <div className="form-group text-left">
               <label htmlFor="exampleInputName">Company's Name</label>
@@ -187,13 +175,13 @@ function RegistrationForm(props) {
               ) : null}
             </div>
             <div className="form-group text-left">
-              <label htmlFor="exampleInputEmail1">Your Email</label>
+              <label htmlFor="exampleInputEmail1">Email address</label>
               <input
                 type="email"
                 className="form-control"
                 id="email"
-                //aria-describedby="emailHelp"
-                placeholder="Your email"
+                aria-describedby="emailHelp"
+                placeholder="Enter email"
                 value={email}
                 onChange={handleEmailInput}
               />

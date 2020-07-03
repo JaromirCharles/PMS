@@ -43,12 +43,12 @@ app.post("/api/invitation", async (req, res) => {
   );
 });
 
-app.post("/api/register", (req, res) => {
+app.post("/api/register", async (req, res) => {
   console.log("++++++++++++++++++++");
   console.log("received: ", req.body);
 
-  firestore.registerTenant(req.body);
-  res.send("registered tenant");
+  const registrationSuccesfull = await firestore.registerTenant(req.body);
+  res.send(registrationSuccesfull);
 });
 
 app.post("/api/validateLogin", async (req, res) => {

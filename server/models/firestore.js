@@ -4,39 +4,54 @@ const admin = require("firebase-admin");
 // initialize the firebase firestore sdk
 let serviceAccount = require("../ServiceAccountKey.json");
 const { getLogger } = require("nodemailer/lib/shared");
-const bcrypt = require('bcrypt');
+const bcrypt = require("bcrypt");
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
 });
 let db = admin.firestore();
 
-function registerTenant(tenant) {
+async function registerTenant(tenant) {
+  let registrationSuccesfull = false;
   console.log("registerTenant", tenant);
   console.log("password", tenant.password);
 
-  db.collection("tenants").doc(tenant.tenant.name).set({email: tenant.tenant.email});
+  await db
+    .collection("tenants")
+    .doc(tenant.tenant.name)
+    .set({ email: tenant.tenant.email }).then((doc) => {
+      registrationSuccesfull = true;
+    })
+    .catch((err) => {
+      registrationSuccesfull = false;
+    });
 
-  bcrypt.hash(tenant.password, 10, function(err, hash) {
+  bcrypt.hash(tenant.password, 10, function (err, hash) {
     if (err) {
-       throw err;
+      throw err;
     }
-      console.log('Your hash: ', hash);
+    console.log("Your hash: ", hash);
 
-      db.collection("login").doc(tenant.tenant.email).set({
+    db
+      .collection("login")
+      .doc(tenant.tenant.email)
+      .set({
         tenant: tenant.tenant.name,
         password: hash,
-        user: "tenant"
+        user: "tenant",
       })
-      .then(function() {
-          console.log("Document successfully written!");
+      .then(function () {
+        console.log("Document successfully written!");
+        registrationSuccesfull = true;
       })
-      .catch(function(error) {
-          console.error("Error writing document: ", error);
+      .catch(function (error) {
+        console.error("Error writing document: ", error);
+        registrationSuccesfull = false;
       });
   });
+  console.log("returning: ", registrationSuccesfull);
+  return registrationSuccesfull;
 }
-
 
 function registerEmployee(employee, password) {
   console.log("registerEmployee", employee.employee);
@@ -47,31 +62,33 @@ function registerEmployee(employee, password) {
     .doc(employee.email)
     .set(employee);
 
-  bcrypt.hash(password, 10, function(err, hash) {
+  bcrypt.hash(password, 10, function (err, hash) {
     if (err) {
-        throw err;
+      throw err;
     }
-      console.log('Your hash: ', hash);
+    console.log("Your hash: ", hash);
 
-      db.collection("login").doc(employee.email).set({
+    db.collection("login")
+      .doc(employee.email)
+      .set({
         tenant: employee.tenant,
         password: hash,
-        user: "employee"
+        user: "employee",
       })
-      .then(function() {
-          console.log("Document successfully written!");
+      .then(function () {
+        console.log("Document successfully written!");
       })
-      .catch(function(error) {
-          console.error("Error writing document: ", error);
+      .catch(function (error) {
+        console.error("Error writing document: ", error);
       });
   });
 }
 
 async function checkCredentials(credentials) {
   var validate = false;
-  var user = ""
+  var user = "";
   var companyName = "";
-  
+
   await db
     .collection("login")
     .doc(credentials.email)
@@ -81,18 +98,18 @@ async function checkCredentials(credentials) {
         console.log("No matching documents.");
         return;
       }
-      console.log("check Credentials:")
+      console.log("check Credentials:");
       console.log(credentials.password);
       console.log(doc.data().password);
 
-      if(bcrypt.compareSync(credentials.password, doc.data().password)) {
+      if (bcrypt.compareSync(credentials.password, doc.data().password)) {
         console.log("in here jeee");
         validate = true;
         companyName = doc.data().tenant;
         user = doc.data().user;
-       } else {
+      } else {
         // Passwords don't match
-       }
+      }
     })
     .catch((err) => {
       console.log("Error getting documents", err);
@@ -108,7 +125,7 @@ async function getTenantJobs(companyName) {
     .collection("tenants")
     .doc(companyName)
     .collection("jobs")
-    .get()
+    .get();
 
   console.log("jobs: ", query);
 
@@ -269,7 +286,6 @@ async function updateSelectedWorkers(company, jobID, action, workers) {
           upcommingJobs: admin.firestore.FieldValue.arrayUnion(jobID),
           appliedJobs: admin.firestore.FieldValue.arrayRemove(jobID),
         });
-    
     } else {
       // 1) remove workers email from job.selectedWorkers
       jobRef.update({
@@ -286,7 +302,6 @@ async function updateSelectedWorkers(company, jobID, action, workers) {
           upcommingJobs: admin.firestore.FieldValue.arrayRemove(jobID),
           appliedJobs: admin.firestore.FieldValue.arrayUnion(jobID),
         });
-  
     }
   }
 }
@@ -300,14 +315,14 @@ async function getTenantEmployees(companyName) {
     .collection("employees")
     .get()
     .then((snapshot) => {
-        snapshot.forEach((doc) => {
-          employees.push({
-            name: doc.data().name,
-            surname: doc.data().surname,
-            email: doc.data().email,
-            status: "active",
-        })
-      })
+      snapshot.forEach((doc) => {
+        employees.push({
+          name: doc.data().name,
+          surname: doc.data().surname,
+          email: doc.data().email,
+          status: "active",
+        });
+      });
     });
 
   return employees;
@@ -381,9 +396,12 @@ async function getAppliedJobs(employeeEmail, companyName) {
   return jobs;
 }
 
-
 async function cancelAppliedJob(employeeEmail, companyName, jobId) {
-  var jobRef = await db.collection("tenants").doc(companyName).collection("employees").doc(employeeEmail);
+  var jobRef = await db
+    .collection("tenants")
+    .doc(companyName)
+    .collection("employees")
+    .doc(employeeEmail);
   jobRef.update({ appliedJobs: admin.firestore.FieldValue.arrayRemove(jobId) });
 }
 
