@@ -69,12 +69,12 @@ export default function EmployeeView({ companyName, employeeEmail }) {
 
   const fetchAvailableJobs = async () => {
     console.log("fetchAvailableJobs");
-    const data = await fetch("/api/tenant_jobs", {
+    const data = await fetch("/api/available_jobs", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ tenant: { companyName } }),
+      body: JSON.stringify({ employeeEmail , companyName }),
     });
     const retJobs = await data.json();
     console.log(retJobs);
@@ -91,6 +91,7 @@ export default function EmployeeView({ companyName, employeeEmail }) {
     });
     const body = await response.text();
     if (response.status !== 200) throw Error(body.message);
+    fetchAvailableJobs();
   }
 
 

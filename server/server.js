@@ -64,6 +64,11 @@ app.post("/api/register_employee", async (req, res) => {
   res.send("registered employee");
 });
 
+app.post("/api/available_jobs", async function (req, res) {
+  const jobs = await firestore.getAvailableJobs( req.body.employeeEmail, req.body.companyName);
+  res.send(jobs);
+});
+
 app.post("/api/tenant_jobs", async function (req, res) {
   const jobs = await firestore.getTenantJobs(req.body.tenant.companyName);
   res.send(jobs);
@@ -87,10 +92,6 @@ app.post("/api/tenant/edit_job", async function (req, res) {
 });
 
 app.post("/api/tenant_applied_workers", async function (req, res) {
-  console.log("......................")
-  console.log("/api/tenant_applied_workers: ", req.body);
-
-
   const appliedWorkers = await firestore.getAppliedWorkers(req.body.companyName, req.body.jobID);
   res.send(appliedWorkers);
 });
@@ -152,7 +153,7 @@ app.post("/api/employee/cancel_AppliedJob", async function (req, res) {
     req.body.companyName,
     req.body.jobId
   );
-  res.send("ok")
+  res.send(appliedJobs)
 });
 
 

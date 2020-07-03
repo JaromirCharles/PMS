@@ -167,6 +167,20 @@ async function getTenantJobs(companyName) {
   return jobs;
 }
 
+async function getAvailableJobs(employeeEmail, companyName) {
+  availableTenantJobs = await getTenantJobs(companyName);
+  appliedJobs = await getAppliedJobs(employeeEmail, companyName);
+  upcomingJobs = await getUpcomingJobs(employeeEmail, companyName);
+
+  appliedJobsIDs = appliedJobs.map(j => j.id);
+  upcomingJobsIDs = upcomingJobs.map(j => j.id);
+
+  myArray = availableTenantJobs.filter( ( el ) => !appliedJobsIDs.includes( el.id ) );
+  myArray = myArray.filter( ( el ) => !upcomingJobsIDs.includes( el.id ) );
+
+  return myArray;
+}
+
 async function addEmpToTenantEmpArray(tenant, email) {
   await db.collection("tenants")
       .doc(tenant)
@@ -427,6 +441,8 @@ async function cancelAppliedJob(employeeEmail, companyName, jobId) {
     .collection("employees")
     .doc(employeeEmail);
   jobRef.update({ appliedJobs: admin.firestore.FieldValue.arrayRemove(jobId) });
+
+  return getAppliedJobs(employeeEmail, companyName)
 }
 
 async function getJobInfo(jobID, companyName) {
@@ -482,4 +498,5 @@ module.exports = {
   getSelectedWorkers,
   updateSelectedWorkers,
   getUpcomingJobs,
+  getAvailableJobs,
 };

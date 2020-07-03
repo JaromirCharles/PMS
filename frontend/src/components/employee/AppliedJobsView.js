@@ -76,19 +76,19 @@ export default function AppliedJobsView({ companyName, employeeEmail }) {
           body: JSON.stringify({ employeeEmail, companyName }),
         });
         const retJobs = await data.json();
+        console.log(retJobs);
         setAppliedJobs(retJobs);
       };
     
       const handleCancelClick = async (event, jobId) => {
-        const response = await fetch("/api/employee/cancel_AppliedJob", {
+        const data = await fetch("/api/employee/cancel_AppliedJob", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({ employeeEmail , companyName, jobId }),
         });
-        const body = await response.text();
-        if (response.status !== 200) throw Error(body.message);
+        const retJobs = await data.json();
         fetchAppliedJobs();
       }
 
