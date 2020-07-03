@@ -59,6 +59,7 @@ export default function TransferList({ jobID, companyName }) {
     //const list = ["Jaromir", "b", "c", "d"];
     //setLeft(list);
     // get applied workers for job with id jobID
+
     fetchAppliedWorkers();
     //const list2 = ["Benny", "e", "f"];
     //setRight(list2)
