@@ -55,6 +55,8 @@ async function checkCredentials(credentials) {
   // check employees
   if(validate === false) {
     for (let tenant of tenantRef.docs) {
+      console.log("__________________");
+      console.log("check tenant: ");
       console.log(tenant.id, tenant.data());
       await credRef
       .doc(tenant.id)
@@ -66,11 +68,14 @@ async function checkCredentials(credentials) {
         user="employee";
         validate = true;
         companyName = tenant.id;
+        console.log("login with ", companyName);
       })
       .catch((err) => {
         console.log("Error getting documents", err);
       });
-      
+      if (validate === true) {
+        break;
+      }     
     }
     console.log("login: ", user);
   }
@@ -81,8 +86,16 @@ async function checkCredentials(credentials) {
 
 async function getTenantJobs(companyName) {
   var jobs = [];
-  //console.log("getting jobs for: ", companyName);
+  console.log("getting jobs for: ", companyName);
   let query = await db
+    .collection("tenants")
+    .doc(companyName)
+    .collection("jobs")
+    .get()
+
+  console.log("jobs: ", query);
+
+  await db
     .collection("tenants")
     .doc(companyName)
     .collection("jobs")
