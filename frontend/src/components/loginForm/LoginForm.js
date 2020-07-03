@@ -1,92 +1,123 @@
 import React, { useState, Fragment } from "react";
 import { Redirect, Link } from "react-router-dom";
-import Tabs from "@material-ui/core/Tabs";
-import Tab from "@material-ui/core/Tab";
 import { makeStyles } from "@material-ui/core/styles";
-import Paper from "@material-ui/core/Paper";
 import Typography from "@material-ui/core/Typography";
 import AppBar from "@material-ui/core/AppBar";
 import Toolbar from "@material-ui/core/Toolbar";
+import validate from "validator";
 
 const useStyles = makeStyles((theme) => ({
   root: {
-    flexGrow: 1,
+    //flexGrow: 1,
     backgroundColor: theme.palette.background.paper,
+    alignSelf: "center",
+    flexDirection: "column",
+    marginTop: "",
   },
   appBar: {
-    background: "grey",
+    background: "lightgrey",
   },
   title: {
-    flexGrow: 1,
+    //flexGrow: 1,
+    fontSize: 30,
+    color: "black",
   },
   header: {
     display: "flex",
     margin: theme.spacing(1),
-    alignItems: "center",
   },
   login: {
-    flexGrow: 1,
+    //flexGrow: 1,
     width: 350,
     position: "absolute",
     left: "50%",
-    top: '25%',
-    transform: 'translate(-50%, -50%)',
+    top: "25%",
+    transform: "translate(-50%, -50%)",
     alignItems: "center",
+    textAlign: "center",
+    marginTop: 50,
   },
   button: {
-    display: 'flex',
-    alignItems: 'center',
-  }
+    border: "solid",
+    borderWidth: 2,
+    backgroundColor: "transparent",
+    color: "black",
+    cursor: "pointer",
+  },
+  signuperrortext: {
+    color: "red",
+    fontSize: 14,
+    marginTop: 0,
+    alignItems: "left",
+  },
 }));
 
 function LoginForm() {
   const classes = useStyles();
-  const [redirect, setRedirect] = React.useState(false);
-  const [user, setUser] = React.useState("");
-  const [state, setState] = useState({
-    email: "",
-    password: "",
-  });
-  const [companyName, setCompanyName] = React.useState("");
+  const [redirect, setRedirect] = useState(false);
+  const [user, setUser] = useState("");
+  const [companyName, setCompanyName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [invalidEmail, setInvalidEmail] = useState(false);
+  const [invalidPassword, setInvalidPassword] = useState(false);
+  const [invalidCredentials, setInvalidCredentials] = useState(false);
 
-  const handleChange = (e) => {
-    const { id, value } = e.target;
-    setState((prevState) => ({
-      ...prevState,
-      [id]: value,
-    }));
+  const handleEmailInput = (e) => {
+    const { value } = e.target;
+    setEmail(value);
+    setInvalidEmail(false);
+  };
+
+  const handlePasswordInput = (e) => {
+    const { value } = e.target;
+    setPassword(value);
+    setInvalidPassword(false);
+  };
+
+  const validateInput = () => {
+    let invalid = false;
+    if (!validate.isEmail(email)) {
+      setInvalidEmail(true);
+      invalid = true;
+    } else if (password === "") {
+      setInvalidPassword(true);
+      invalid = true;
+    }
+    return invalid;
   };
 
   const handleSubmitClick = async (e) => {
     e.preventDefault();
 
+    if (validateInput()) {
+      return;
+    }
+
+    let credentials = {
+      email: email,
+      password: password,
+    };
 
     const response = await fetch("api/validateLogin", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ login: { state } }),
+      body: JSON.stringify({ login: { credentials } }),
     });
     const body = await response.json();
     if (response.status !== 200) throw Error(body.message);
 
     if (body.validate === true) {
+      setInvalidCredentials(false);
       setCompanyName(body.companyName);
-      setUser(body.user)
-
-      console.log("setting to true");
-      // save user's email to localstorage so that the application always knows which user is currently logged on.
-      //window.localStorage.setItem("user_email", state.email);
+      setUser(body.user);
       setRedirect(true);
     } else {
-      console.log("setting to false");
       setRedirect(false);
+      setInvalidCredentials(true);
     }
-  };
-
-  const handleUserChange = (event, newValue) => {
-    setUser(newValue);
   };
 
   if (redirect) {
@@ -98,19 +129,19 @@ function LoginForm() {
           component={Link}
           to={{
             pathname: `/employee/${companyName}`,
-            state: { email: state.email },
+            state: { email: email },
           }}
         />
       );
     }
   } else {
     return (
-      <Fragment>
+      <div className={classes.root}>
         <Fragment>
           <AppBar className={classes.appBar} position="static">
             <Toolbar>
               <Typography variant="h6" className={classes.title}>
-                Personnel Management System
+                <b style={{fontSize: 35}}>pms</b> . <b style={{fontSize: 35}}>p</b>ersonnel <b style={{fontSize: 35}}>m</b>anagement <b style={{fontSize: 35}}>s</b>ystem
               </Typography>
             </Toolbar>
           </AppBar>
@@ -118,45 +149,63 @@ function LoginForm() {
 
         {/* <div className="card col-12 col-lg-4 login-card mt-2 ml-4 mb-4 hv-center"> */}
         <div className={classes.login}>
-          <Typography className={classes.header} variant="h5">Log in to your PMS</Typography>
+          <p className="h5 text-center login-heading">Sign in</p>
           <form>
             <div className="form-group text-left">
-              <label htmlFor="exampleInputEmail1">Email</label>
+              <label htmlFor="exampleInputEmail1">Email:</label>
               <input
                 type="email"
                 className="form-control"
                 id="email"
                 aria-describedby="emailHelp"
                 placeholder="Enter email"
-                value={state.username}
-                onChange={handleChange}
+                value={email}
+                //autoComplete="off"
+                onChange={handleEmailInput}
               />
+              {invalidEmail ? (
+                <span className={classes.signuperrortext}>
+                  {" "}
+                  Please type valid email address.
+                </span>
+              ) : null}
             </div>
             <div className="form-group text-left">
-              <label htmlFor="exampleInputPassword1">Password</label>
+              <label htmlFor="exampleInputPassword1">Password:</label>
 
               <input
                 type="password"
                 className="form-control"
                 id="password"
                 placeholder="Password"
-                value={state.password}
-                onChange={handleChange}
+                value={password}
+                onChange={handlePasswordInput}
               />
+              {invalidPassword ? (
+                <span className={classes.signuperrortext}>
+                  Password cannot be empty.
+                </span>
+              ) : null}
             </div>
+            <div>
 
+              {
+                invalidCredentials ? <span className={classes.signuperrortext}>
+                  Incorrect username/password. Please try again.
+                </span> : null
+            }
             <button
               type="submit"
               className="btn btn-primary"
-              component={Link}
-              to="/tenant"
+              
               onClick={handleSubmitClick}
             >
-              Login
+                LOGIN
             </button>
+            </div>
           </form>
         </div>
-      </Fragment>
+      </div>
     );
   }
 }

@@ -6,7 +6,7 @@ FROM node:current-slim
 WORKDIR /usr/src/app
 
 # Copies package.json and package-lock.json to Docker environment
-COPY package.json .
+COPY package.json yarn.lock ./
 
 # Installs all node packages
 RUN npm install
@@ -16,6 +16,8 @@ COPY . .
 
 # Uses port which is used by the actual application
 EXPOSE 3000 5000
+
+ENV ENV REACT_APP_baseAPIURL=35.198.102.247:31800
 
 # Finally runs the application
 CMD [ "npm", "start"]

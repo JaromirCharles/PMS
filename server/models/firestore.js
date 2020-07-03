@@ -19,7 +19,8 @@ async function registerTenant(tenant) {
   await db
     .collection("tenants")
     .doc(tenant.tenant.name)
-    .set({ email: tenant.tenant.email }).then((doc) => {
+    .set({ email: tenant.tenant.email })
+    .then((doc) => {
       registrationSuccesfull = true;
     })
     .catch((err) => {
@@ -32,8 +33,7 @@ async function registerTenant(tenant) {
     }
     console.log("Your hash: ", hash);
 
-    db
-      .collection("login")
+    db.collection("login")
       .doc(tenant.tenant.email)
       .set({
         tenant: tenant.tenant.name,
