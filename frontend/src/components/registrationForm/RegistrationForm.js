@@ -51,12 +51,18 @@ function RegistrationForm(props) {
     console.log("Submitting: ", state);
     e.preventDefault();
     //sendDetailsToServer()
+    
+    const tenant = {
+      name: state.name,
+      email: state.email,
+    };
+    const password = state.password
     const response = await fetch("/api/register", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ tenant: { state } }),
+      body: JSON.stringify( {tenant, password}),
     });
     const body = await response.text();
     if (response.status !== 200) throw Error(body.message);

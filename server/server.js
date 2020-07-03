@@ -44,8 +44,10 @@ app.post("/api/invitation", async (req, res) => {
 });
 
 app.post("/api/register", (req, res) => {
-  //console.log("received: ", req.body);
-  firestore.registerTenant(req.body.tenant);
+  console.log("++++++++++++++++++++");
+  console.log("received: ", req.body);
+
+  firestore.registerTenant(req.body);
   res.send("registered tenant");
 });
 
@@ -59,7 +61,7 @@ app.post("/api/validateLogin", async (req, res) => {
 });
 
 app.post("/api/register_employee", async (req, res) => {
-  await firestore.registerEmployee(req.body.employee);
+  await firestore.registerEmployee(req.body.employee, req.body.password);
   res.send("registered employee");
 });
 
