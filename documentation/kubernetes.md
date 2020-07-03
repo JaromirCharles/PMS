@@ -90,7 +90,7 @@ Kubernetes is an open-source system for automating deployment, scaling and manag
 
 
 
-## Deploying PMS on a Google Kubernetes Engine (GKE) cluster
+## Deploying PMS on a Google Kubernetes Engine (GKE) cluster (followed [this guide](https://cloud.google.com/kubernetes-engine/docs/tutorials/hello-app#console))
 
 * Install the Google Cloud SDK. [See](https://cloud.google.com/sdk/docs/quickstart-debian-ubuntu)
 * Install the Kubernetes command-line tool. `kubectl` is used to communicate with Kubernetes.
@@ -138,4 +138,164 @@ Now that the Docker image is stored in Container Registry, you need to create a 
 * `gcloud config set compute/zone europe-west3` - set compute engine zone for gcloud tool
 * Create a cluster named pms-cluster
   * `gcloud container clusters create pms-cluster`
+    * **DID NOT WORK**
+  * Did it via the Console
+    * **WORKED**
 
+###### Step 5: Deploy the sample app to GKE
+
+Now we can deploy the docker image we built to the GKE cluster. Kubernetes represents applications as Pods, which are scalable units holding one or more containers. We will create a Kubernetes Deployment to run `pms` on the cluster. The deployment will have 3 replicas(pods). One deployment pod will contain only one container, the pms application docker image. We will also create a HorizonalPodAutoscaler resource that will scale the number of Pods from 3 to a number between 1 and 5, based on CPU load.
+
+* **Prof had a yaml file. Check that out**
+
+* Create a Kubernetes Deployment for the pms Docker image
+
+  * `kubectl create deployment pms --image=gcr.io/${PROJECT_ID}/pms:v1`
+
+    * ```
+      error: failed to discover supported resources: Get http://localhost:8080/apis/apps/v1?timeout=32s: dial tcp 127.0.0.1:8080: connect: connection refused
+      ```
+
+      * FIX: `gcloud container clusters get-credentials pms-cluster --zone europe-west3-a`
+
+* Set the baseline number of Deployment replicas to 3
+
+  * `kubectl scale deployment pms --replicas=3`
+
+* Create a HorizontalPodAutoscaler resource for your deployment
+
+  * `kubectl autoscale deployment pms --cpu-percent=80 --min=1 --max=5`
+
+* To see the pods created, run the following command
+
+  * `kubectl get pods`
+
+###### Step 6: Expose the pms app to the internet
+
+While pods do have individually-assigned Ip addressed, those IPs can only be reached from inside your cluster. Also, GKE Pods are designed to be ephemeral(lasting for a very short time), spinning up or down based on scaling needs. We need a way to `1)` group pods together into one static hostname, and `2)` expose a group of Pods outside the cluster, to the internet. Kubernetes Services solve for both these problems. Services group Pods into one static IP address, reachable from any Pod inside the cluster. GKE also assigns a DNS hostname to that static IP. To expose a Kubernetes Service outside the cluster, you will create a service of type **LoadBalancer**. This type of Service spawns an External Load balancer IP for a set of Pods, reachable via the internet.
+
+* Use the kubectl expose command to generate a Kubernetes Service for the pms deployment
+* **Prof had a yaml file. Check that out**
+  * `kubectl expose deployment pms --name=pms-service --type=LoadBalancer --port 80 --target-port 3000`
+    * Here, the `--port` flag specifies the port number configured on the Load Balancer, and the `--target-port` flag specifies the port number that the `pms` app container is listening on.
+
+* Run the following command to get the Service details for `pms-service`
+  * `kubectl get service`
+    * Copy the `EXTERNAL-IP` address
+
+Now the `pms` pods are exposed to the internet via a Kubernetes Service.
+
+###### Step 7: Deploy a new version of the pms app
+
+One could upgrade the app to a new version by building and deploying a new Docker image to your GKE cluster. GKE's rolling update feature allows you to update your Deployments without downtime. During a rolling update, your GKE cluster will incrementally replace the existing `pms` Pods with Pods containing the Docker image for the new version. During the update, your load balancer service will route traffic only into available Pods.
+
+1. Build and tag a new `pms` Docker image.
+   1. `docker build -t gcr.io/${PROJECT_ID}/pms-client:v2`
+2. Push the image to Container Registry
+   1. `docker push gcr.io/${PROJECT_ID}/pms-client:v2`
+3. Now one is ready to update the `app` Kubernetes Deployment to use a new Docker image
+   1. Apply a rolling update to the existing deployment with an image update
+      1. `kubectl set image deployment/pms-client pms-client=gcr.io/${PROJECT_ID}/pms-client:v2`
+   2. 
+4. [continue here](https://cloud.google.com/kubernetes-engine/docs/tutorials/hello-app#cloud-shell_3)
+
+###### [Configuring Domain Names with Static IP Addresses](https://cloud.google.com/kubernetes-engine/docs/tutorials/configuring-domain-name-static-ip)
+
+
+
+
+
+---
+
+The main unit of work for Kubernetes is a [Pod](https://kubernetes.io/docs/concepts/workloads/pods/pod/). The simplest way of thinking about a Pod is like a physical server or virtual machine. A Pod can host one or many containers. A microservice application might consist of a number of pods, two in our case – a ‘backend’ and a ‘frontend’. These pods need to know about each other in order for them to communicate, and the way they do this is through a Service.
+
+A Deployment on the other hand provides a declarative state for our Service. Deployments control our Services, updating them if they need to be, as well as providing a Service with ‘what’ it needs to deploy.
+
+**Containers in the same Docker network can talk to each other by their names.** This is made possible by a built-in DNS mechanism.
+
+Each component, or "microservice", should be scalable independently.
+
+ Deployment creates and runs containers and keeps them alive.
+
+Service discovery is a critical Kubernetes concept.
+
+**Pods within a cluster can talk to each other through the names of the Services exposing them.**
+
+Kubernetes has an internal DNS system that keeps track of domain names and IP addresses.
+
+
+
+**To be scalable, applications must be stateless.**
+
+Stateless means that an instance can be killed restarted or duplicated at any time without any data loss or inconsistent behaviour.
+
+*You must make your app stateless before you can scale it.*
+
+"proxy": "http://localhost:5000/"
+
+
+
+```
+# Docker Image which is used as foundation to create a 
+# custom Docker Image with this Dockerfile
+FROM node:current-slim
+
+# A directory within the virtualized Docker environment
+WORKDIR /usr/src/app
+
+# Copies package.json and package-lock.json to Docker environment
+COPY package.json yarn.lock ./
+
+# Installs all node packages
+RUN npm install
+
+# Copies everything over to Docker environment
+COPY . .
+
+# Uses port which is used by the actual application
+EXPOSE 3000 5000
+
+ENV ENV REACT_APP_baseAPIURL=35.198.102.247:31800
+
+# Finally runs the application
+CMD [ "npm", "start"]
+
+```
+
+```
+# Docker Image which is used as foundation to create a 
+# custom Docker Image with this Dockerfile
+FROM node:current-slim as pms-app-build
+
+# A directory within the virtualized Docker environment
+WORKDIR /client
+
+# Copies package.json and package-lock.json to Docker environment
+COPY package.json yarn.lock ./
+
+
+RUN yarn
+
+# Copies everything over to Docker environment
+COPY ./public ./public
+
+COPY ./src ./src
+
+# Uses port which is used by the actual application
+#EXPOSE 3000 5000
+
+ENV ENV REACT_APP_baseAPIURL=35.198.102.247:31800
+
+RUN yarn build
+
+FROM nginx:latest
+
+LABEL maintainer=CloudJB
+
+COPY --from=pms-app-build /client/build/ /usr/share/nginx/html
+
+EXPOSE 80
+
+```
+
+http://35.198.102.247:5000

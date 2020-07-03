@@ -37,26 +37,25 @@ app.post("/api/invitation", async (req, res) => {
     firestore.addEmpToTenantEmpArray(tenant, e);
   });
 
-
   res.send(
     `I received your POST request. This is what you sent me: ${req.body.email.emailList}`
   );
 });
 
-app.post("/api/register", (req, res) => {
+app.post("/api/register", async (req, res) => {
   console.log("++++++++++++++++++++");
   console.log("received: ", req.body);
 
-  firestore.registerTenant(req.body);
-  res.send("registered tenant");
+  const registrationSuccesfull = await firestore.registerTenant(req.body);
+  res.send(registrationSuccesfull);
 });
 
 app.post("/api/validateLogin", async (req, res) => {
-  console.log(req.body);
+  //console.log(req.body);
   const {user, validate, companyName } = await firestore.checkCredentials(
-    req.body.login.state
+    req.body.login.credentials
   );
-  console.log(`validate ${validate}, companyName: ${companyName}`);
+  //console.log(`validate ${validate}, companyName: ${companyName}`);
   res.send({user, validate, companyName });
 });
 
