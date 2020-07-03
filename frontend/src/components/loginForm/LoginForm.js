@@ -107,7 +107,9 @@ function LoginForm() {
       body: JSON.stringify({ login: { credentials } }),
     });
     const body = await response.json();
-    if (response.status !== 200) throw Error(body.message);
+    if (response.status !== 200) {
+      //throw Error(body.message);
+    } 
 
     if (body.validate === true) {
       setInvalidCredentials(false);
