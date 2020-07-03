@@ -4,6 +4,7 @@ const admin = require("firebase-admin");
 // initialize the firebase firestore sdk
 let serviceAccount = require("../ServiceAccountKey.json");
 const { getLogger } = require("nodemailer/lib/shared");
+const bcrypt = require('bcrypt');
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
@@ -11,78 +12,107 @@ admin.initializeApp({
 let db = admin.firestore();
 
 function registerTenant(tenant) {
-  console.log("registerTenant", tenant.state);
-  const tenantUpdate = { ...tenant.state};
-  db.collection("tenants").doc(tenant.state.name).set(tenantUpdate);
+  console.log("registerTenant", tenant);
+  console.log("password", tenant.password);
+
+  db.collection("tenants").doc(tenant.tenant.name).set({email: tenant.tenant.email});
+
+  bcrypt.hash(tenant.password, 10, function(err, hash) {
+    if (err) {
+       throw err;
+    }
+      console.log('Your hash: ', hash);
+
+      db.collection("login").doc(tenant.tenant.email).set({
+        tenant: tenant.tenant.name,
+        password: hash,
+        user: "tenant"
+      })
+      .then(function() {
+          console.log("Document successfully written!");
+      })
+      .catch(function(error) {
+          console.error("Error writing document: ", error);
+      });
+  });
 }
 
-function registerEmployee(employee) {
+
+function registerEmployee(employee, password) {
   console.log("registerEmployee", employee.employee);
   // add employee to employees collection
   db.collection("tenants")
-    .doc(employee.employee.tenant)
+    .doc(employee.tenant)
     .collection("employees")
-    .doc(employee.employee.email)
-    .set(employee.employee);
+    .doc(employee.email)
+    .set(employee);
+
+  bcrypt.hash(password, 10, function(err, hash) {
+    if (err) {
+        throw err;
+    }
+      console.log('Your hash: ', hash);
+
+      db.collection("login").doc(employee.email).set({
+        tenant: employee.tenant,
+        password: hash,
+        user: "employee"
+      })
+      .then(function() {
+          console.log("Document successfully written!");
+      })
+      .catch(function(error) {
+          console.error("Error writing document: ", error);
+      });
+  });
 }
 
 async function checkCredentials(credentials) {
   var validate = false;
   var user = ""
   var companyName = "";
-  let credRef = db.collection("tenants");
-  let tenantRef = await credRef.get();
-
-  //check tenants
-  await credRef
-    .where("email", "==", credentials.email)
-    .where("password", "==", credentials.password)
+  
+  await db
+    .collection("login")
+    .doc(credentials.email)
     .get()
     .then((doc) => {
       if (doc.empty) {
         console.log("No matching documents.");
         return;
       }
-      console.log(doc);
-        user="tenant";
+      console.log("check Credentials:")
+      console.log(credentials.password);
+      console.log(doc.data().password);
+
+      if(bcrypt.compareSync(credentials.password, doc.data().password)) {
+        console.log("in here jeee");
         validate = true;
-        companyName = doc.docs[0].data().name;   
+        companyName = doc.data().tenant;
+        user = doc.data().user;
+       } else {
+        // Passwords don't match
+       }
     })
     .catch((err) => {
       console.log("Error getting documents", err);
     });
 
-  // check employees
-  if(validate === false) {
-    for (let tenant of tenantRef.docs) {
-      console.log(tenant.id, tenant.data());
-      await credRef
-      .doc(tenant.id)
-      .collection("employees")
-      .where("email", "==", credentials.email)
-      .where("password", "==", credentials.password)
-      .get()
-      .then((doc) => {
-        user="employee";
-        validate = true;
-        companyName = tenant.id;
-      })
-      .catch((err) => {
-        console.log("Error getting documents", err);
-      });
-      
-    }
-    console.log("login: ", user);
-  }
-
   return { user, validate, companyName };
 }
 
-
 async function getTenantJobs(companyName) {
   var jobs = [];
-  //console.log("getting jobs for: ", companyName);
+  console.log("getting jobs for: ", companyName);
   let query = await db
+    .collection("tenants")
+    .doc(companyName)
+    .collection("jobs")
+    .get()
+
+  console.log("jobs: ", query);
+
+  await db
     .collection("tenants")
     .doc(companyName)
     .collection("jobs")

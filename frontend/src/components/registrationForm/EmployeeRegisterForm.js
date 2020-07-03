@@ -57,7 +57,6 @@ export default function EmployeeRegisterForm({ match }) {
       name: name,
       surname: surname,
       email: email,
-      password: password,
       tenant: tenant,
     };
     console.log("employee: ", employee);
@@ -66,7 +65,7 @@ export default function EmployeeRegisterForm({ match }) {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ employee: { employee } }),
+      body: JSON.stringify({ employee, password }),
     });
     const body = await response.text();
     if (response.status !== 200) throw Error(body.message);

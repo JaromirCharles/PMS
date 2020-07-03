@@ -101,6 +101,7 @@ function RegistrationForm(props) {
 
   const handleSubmitClick = async (e) => {
     e.preventDefault();
+<<<<<<< HEAD
     if (validateInput()) {
       return;
     }
@@ -111,12 +112,25 @@ function RegistrationForm(props) {
       password: password,
     };
 
+=======
+    //sendDetailsToServer()
+    
+    const tenant = {
+      name: state.name,
+      email: state.email,
+    };
+    const password = state.password
+>>>>>>> fb5712556805ac10615dedcaffaed714e1577950
     const response = await fetch("/api/register", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
+<<<<<<< HEAD
       body: JSON.stringify({ tenant: { registration } }),
+=======
+      body: JSON.stringify( {tenant, password}),
+>>>>>>> fb5712556805ac10615dedcaffaed714e1577950
     });
     const body = await response.text();
     if (response.status !== 200) {
