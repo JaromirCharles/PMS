@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Fragment } from "react";
 import { makeStyles } from "@material-ui/core";
 import { Typography } from "@material-ui/core";
 import TextField from "@material-ui/core/TextField";
@@ -6,6 +6,9 @@ import AddCircleIcon from "@material-ui/icons/AddCircle";
 import Button from "@material-ui/core/Button";
 import { Divider } from "@material-ui/core";
 import TenantEmployeesTable from "./TenantEmployeesTable";
+import validate from "validator";
+import { Alert } from "@material-ui/lab";
+import Snackbar from "@material-ui/core/Snackbar";
 
 const useStyles = makeStyles((theme) => ({
   root: {},
@@ -15,8 +18,8 @@ const useStyles = makeStyles((theme) => ({
   },
   buttons: {
     margin: theme.spacing(1),
-    /* backgroundColor: "green",
-      color: "white", */
+    borderColor: "white",
+    borderRadius: 100,
   },
   card: {
     maxWidth: 250,
@@ -36,59 +39,79 @@ const useStyles = makeStyles((theme) => ({
 
 export default function TenantEmployeesView({ companyName }) {
   const classes = useStyles();
-  const [emailList, updateEmailList] = useState([]);
   const [email, setEmail] = useState("");
+  const [severity, setSeverity] = useState("");
+  const [snackbarMsg, setSnackbarMsg] = useState("");
+  const [showSnackBar, setShowSnackBar] = useState(false);
+  const [dummy, setDummy] = useState(false);
 
   useEffect(() => {
     console.log("Get employee list");
-    return () => {
-      console.log("clean up");
-    };
+    onClickInvite()
   }, []);
 
-  const addEmail = () => {
-    // add email to list, clear email textfield, disable add
-    console.log(`Adding email: ${email} to list`);
-    updateEmailList((emailList) => [...emailList, email]);
-    setEmail("");
-    console.log(`email after add: ${email}`);
-  };
-
   const onClickInvite = async () => {
-    console.log("emails in list", emailList);
-    console.log("companyName: ", companyName);
+    if (email === "") {
+      setShowSnackBar(true);
+      setSnackbarMsg("Email cannot be blank...");
+      setSeverity("error");
+      setTimeout(() => setShowSnackBar(false), 3000);
+      return;
+    }
+    if (!validate.isEmail(email)) {
+      setShowSnackBar(true);
+      setSnackbarMsg("Not a valid email");
+      setSeverity("error");
+      setTimeout(() => setShowSnackBar(false), 3000);
+      return;
+    }
+    //console.log(`Inviting '${email}' to '${companyName}' workers group`);
 
     const response = await fetch("/api/invitation", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ email: { emailList, tenant: { companyName } } }),
+      body: JSON.stringify({ email, companyName }),
     });
     const body = await response.text();
-    if (response.status !== 200) throw Error(body.message);
-    console.log(body);
+    if (response.status !== 200) {
+      //throw Error(body.message);
+      console.log("ERROR")
+    }
+      
+    setShowSnackBar(true);
+    setSnackbarMsg(`Successfully added ${email}`);
+    setSeverity("success");
+    setTimeout(() => setShowSnackBar(false), 3000);
+    setEmail("");
+    let fake = {...dummy };
+    fake = !fake;
+
+    setDummy(fake)
   };
 
   return (
     <div>
+      {true ? console.log("return") : null}
       <div>
         <Typography variant="h6" color="initial">
           Invite Employees
         </Typography>
+
         <div className={classes.invite_employees}>
           <TextField
             id="email"
             label="Email"
-            defaultValue={email}
             variant="outlined"
             margin="normal"
+            type="email"
+            value={email}
             //required={true}
             InputLabelProps={{
               shrink: true,
             }}
             size="small"
-            type="email"
             onChange={(event) => {
               const { value } = event.target;
               setEmail(value);
@@ -100,33 +123,28 @@ export default function TenantEmployeesView({ companyName }) {
             size="small"
             color="primary"
             startIcon={<AddCircleIcon />}
-            onClick={() => addEmail()}
-          >
-            Add
-          </Button>
-        </div>
-        <div>
-          {emailList.map((email) => (
-            <Typography variant="body2">{email}</Typography>
-          ))}
-        </div>
-        <div>
-          <Button
-            className={classes.buttons}
-            variant="contained"
-            size="small"
-            color="primary"
+            //onClick={() => addEmail()}
             onClick={() => onClickInvite()}
           >
             Invite
           </Button>
         </div>
+        
         <Divider style={{ height: "10px" }} />
         <Divider style={{ height: "10px", opacity: 0 }} />
       </div>
       <div>
-        <TenantEmployeesTable companyName={companyName}/>
+        <TenantEmployeesTable companyName={companyName} />
       </div>
+      {showSnackBar ? (
+        <Snackbar
+          anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+          open={true}
+          message={snackbarMsg}
+        >
+          <Alert severity={severity}>{snackbarMsg}</Alert>
+        </Snackbar>
+      ) : null}
     </div>
   );
 }

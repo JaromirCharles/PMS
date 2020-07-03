@@ -108,7 +108,7 @@ function TenantPersistentDrawer({ match }) {
   const [companyName] = useState(match.params.tenant);
 
   useEffect(() => {
-    console.log("loading view: ", view);
+    console.log("useEffect: ", view);
   }, [match]);
 
   const handleDrawerOpen = () => {
@@ -120,24 +120,22 @@ function TenantPersistentDrawer({ match }) {
   };
 
   const handleClick = (from) => {
-    console.log("Clicked Menu Item: " + from);
     window.localStorage.setItem("view", "jobs");
     setView("jobs");
-    setJobsView(true);
+    /* setJobsView(true);
     setCreateJob(false);
     setEmployeeView(false);
-    setCurrentMenu(from);
+    setCurrentMenu(from); */
   };
 
   const employeesClick = () => {
-    console.log("Clicked Menu Item: Employees");
     window.localStorage.setItem("view", "employees");
     setView("employees");
     // ---- delete
-    setCurrentMenu("");
+    /* setCurrentMenu("");
     setJobsView(false);
     setCreateJob(false);
-    setEmployeeView(true);
+    setEmployeeView(true); */
   };
 
   const onLogout = () => {
@@ -194,7 +192,7 @@ function TenantPersistentDrawer({ match }) {
   };
 
   if (logout) {
-    return <Redirect to="/" />;
+    return <Redirect to="/"/>;
   } else {
     return (
       <div className={classes.root}>
@@ -288,10 +286,7 @@ function TenantPersistentDrawer({ match }) {
           })}
         >
           <div className={classes.drawerHeader} />
-          {/* <Typography variant="subtitle1" paragraph>
-            {currentMenu}
-          </Typography> */}
-
+        
           {matchView()}
 
         </main>

@@ -13,6 +13,8 @@ const useStyles = makeStyles((theme) => ({
     alignSelf: "center",
     flexDirection: "column",
     marginTop: "",
+    /* display: "flex",
+    flexGrow: 1, */
   },
   appBar: {
     background: "lightgrey",
@@ -109,7 +111,7 @@ function LoginForm() {
     const body = await response.json();
     if (response.status !== 200) {
       //throw Error(body.message);
-    } 
+    }
 
     if (body.validate === true) {
       setInvalidCredentials(false);
@@ -143,7 +145,10 @@ function LoginForm() {
           <AppBar className={classes.appBar} position="static">
             <Toolbar>
               <Typography variant="h6" className={classes.title}>
-                <b style={{fontSize: 35}}>pms</b> . <b style={{fontSize: 35}}>p</b>ersonnel <b style={{fontSize: 35}}>m</b>anagement <b style={{fontSize: 35}}>s</b>ystem
+                <b style={{ fontSize: 35 }}>pms</b> .{" "}
+                <b style={{ fontSize: 35 }}>p</b>ersonnel{" "}
+                <b style={{ fontSize: 35 }}>m</b>anagement{" "}
+                <b style={{ fontSize: 35 }}>s</b>ystem
               </Typography>
             </Toolbar>
           </AppBar>
@@ -190,20 +195,18 @@ function LoginForm() {
               ) : null}
             </div>
             <div>
-
-              {
-                invalidCredentials ? <span className={classes.signuperrortext}>
+              {invalidCredentials ? (
+                <span className={classes.signuperrortext}>
                   Incorrect username/password. Please try again.
-                </span> : null
-            }
-            <button
-              type="submit"
-              className="btn btn-primary"
-              
-              onClick={handleSubmitClick}
-            >
+                </span>
+              ) : null}
+              <button
+                type="submit"
+                className="btn btn-primary mt-3"
+                onClick={handleSubmitClick}
+              >
                 LOGIN
-            </button>
+              </button>
             </div>
           </form>
         </div>

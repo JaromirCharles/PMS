@@ -105,12 +105,6 @@ function RegistrationForm(props) {
       return;
     }
 
-    let registration = {
-      name: name,
-      email: email,
-      password: password,
-    };
-
     const tenant = {
       name: name,
       email: email,
