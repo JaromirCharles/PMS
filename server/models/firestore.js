@@ -72,6 +72,19 @@ async function checkCredentials(credentials) {
   var user = ""
   var companyName = "";
   
+  /* ----- for testing create employee
+  const employee = {
+    name: "Jaromir",
+    surname: "Charles",
+    email: "jaromircharles@hotmail.com",
+    tenant: "Hotchocolates",
+  };
+  const passe = {
+    passe: "admin",
+  };
+  registerEmployee(employee, passe.passe)
+  */
+
   await db
     .collection("login")
     .doc(credentials.email)
@@ -83,7 +96,9 @@ async function checkCredentials(credentials) {
       }
       console.log("check Credentials:")
       console.log(credentials.password);
-      console.log(doc.data().password);
+      console.log(credentials.email);
+      console.log(doc.data());
+
 
       if(bcrypt.compareSync(credentials.password, doc.data().password)) {
         console.log("in here jeee");
@@ -93,6 +108,7 @@ async function checkCredentials(credentials) {
        } else {
         // Passwords don't match
        }
+
     })
     .catch((err) => {
       console.log("Error getting documents", err);
@@ -143,62 +159,30 @@ async function addEmpToTenantEmpArray(tenant, email) {
 }
 
 async function getAppliedWorkers(company, jobID) {
-  console.log("getAppliedWorkers for %s %s", company, jobID);
   var appliedWorkers = [];
-  var employees_in_tenants_array = [];
-  let query = await db
-    .collection("tenants")
-    .doc(company)
-    .get()
-    .then((doc) => {
-      if (!doc.exists) {
-        console.log("No such document!");
-      } else {
-        employees_in_tenants_array = doc.data().employees;
-      }
+
+  let jobRef = await db
+  .collection("tenants")
+  .doc(company)
+  .collection("employees")
+  .where("appliedJobs",  "array-contains", jobID)
+  .get();
+  
+  for(applWorker of jobRef.docs) {
+    appliedWorkers.push({
+      name: applWorker.data().name,
+      surname: applWorker.data().surname,
+      email: applWorker.data().email,
     });
-  console.log("%s employees: ", company, employees_in_tenants_array);
-
-  for (let index = 0; index < employees_in_tenants_array.length; index++) {
-    let query = await db
-      .collection("tenants")
-      .doc(company)
-      .collection("employees")
-      .doc(employees_in_tenants_array[index])
-      .get()
-      .then((doc) => {
-        if (!doc.exists) {
-          console.log("No document for: ", employees_in_tenants_array[index]);
-        } else {
-          if (typeof doc.data().appliedJobs !== "undefined") {
-            const jobs = doc.data().appliedJobs;
-            if (jobs.includes(jobID)) {
-              console.log("FOUND WORKER");
-              appliedWorkers.push({
-                name: doc.data().name,
-                surname: doc.data().surname,
-                email: doc.data().email,
-              });
-            }
-          }
-        }
-      });
   }
-  /* let applied = await db
-    .collection("employees")
-    .where("appliedJobs", "array-contains", "Cl0OBNXtaVg0zqvkbkLe").get().then((doc) => {
-      if (!doc.exists) {
-        console.log("asdfasdf")
-      } else {
-
-        console.log(doc.data())
-      }
-    }); */
+  console.log(appliedWorkers);
+  
   return appliedWorkers;
 }
 
 async function getSelectedWorkers(company, jobID) {
   var selectedWorkers = [];
+
   let query = await db
     .collection("tenants")
     .doc(company)
@@ -206,20 +190,26 @@ async function getSelectedWorkers(company, jobID) {
     .doc(jobID)
     .get()
     .then((doc) => {
+      console.log("ooooooooooooooooooo")
+      console.log(company)
+      console.log(jobID)
       if (!doc.exists) {
         console.log("##################No such document with ID %s", jobID);
       } else {
-        console.log("##################", doc.data().selectedWorkers);
-        selectedWorkers = doc.data().selectedWorkers;
+        console.log("##################", doc.data());
+        selectedWorkers = doc.data();
       }
     });
-  console.log("~~: ", await getEmployeesInfo(company, selectedWorkers));
+
   selectedWorkers = await getEmployeesInfo(company, selectedWorkers);
+
   return selectedWorkers;
 }
 
 async function getEmployeesInfo(company, employeeList) {
+  
   var workersInfoList = [];
+  
   for (let index = 0; index < employeeList.length; index++) {
     let query = await db
       .collection("tenants")
@@ -239,6 +229,7 @@ async function getEmployeesInfo(company, employeeList) {
         }
       });
   }
+  
   return workersInfoList;
 }
 
@@ -381,6 +372,39 @@ async function getAppliedJobs(employeeEmail, companyName) {
   return jobs;
 }
 
+async function getUpcomingJobs(employeeEmail, companyName) {
+  var upcommingJobs_array = [];
+  var jobs = [];
+  let query = await db
+    .collection("tenants")
+    .doc(companyName)
+    .collection("employees")
+    .doc(employeeEmail)
+    .get()
+    .then((doc) => {
+      if (doc.exists) {
+        upcommingJobs_array = doc.data().upcommingJobs;
+        console.log("upcommingJobs:", upcommingJobs_array);
+      } else {
+        console.log("No applied Jobs");
+      }
+    });
+
+  for (let idx = 0; idx < upcommingJobs_array.length; idx++) {
+    let query = await db
+      .collection("tenants")
+      .doc(companyName)
+      .collection("jobs")
+      .doc(upcommingJobs_array[idx])
+      .get()
+      .then((doc) => {
+        jobs.push({ ...doc.data(), id: doc.id });
+        console.log(doc.data());
+      });
+  }
+  return jobs;
+}
+
 
 async function cancelAppliedJob(employeeEmail, companyName, jobId) {
   var jobRef = await db.collection("tenants").doc(companyName).collection("employees").doc(employeeEmail);
@@ -439,4 +463,5 @@ module.exports = {
   getAppliedWorkers,
   getSelectedWorkers,
   updateSelectedWorkers,
+  getUpcomingJobs,
 };
