@@ -24,6 +24,7 @@ import { Tooltip } from "@material-ui/core";
 import { Redirect } from "react-router-dom";
 import EmployeeView from "../employee/EmployeeView";
 import AppliedJobsView from "../employee/AppliedJobsView";
+import UpcomingJobsView from "../employee/UpcomingJobsView";
 
 const drawerWidth = 240;
 
@@ -130,6 +131,10 @@ function EmployeePersistentDrawer(props) {
         return (
           <AppliedJobsView companyName={companyName} employeeEmail={props.location.state.email} />
         );
+        case "Upcoming Jobs":
+          return (
+            <UpcomingJobsView companyName={companyName} employeeEmail={props.location.state.email} />
+          );
       default:
         return (
           <EmployeeView companyName={companyName} employeeEmail={props.location.state.email} />
