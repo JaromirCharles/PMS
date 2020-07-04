@@ -1,4 +1,4 @@
-import React, { useState, useEffect, Fragment } from "react";
+import React, { useState, Fragment } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import TextField from "@material-ui/core/TextField";
 import AppBar from "@material-ui/core/AppBar";
@@ -163,7 +163,6 @@ export default function EmployeeRegisterForm({ match }) {
               InputLabelProps={{
                 shrink: true,
               }}
-              type="email"
               required={true}
               margin="normal"
               size="small"

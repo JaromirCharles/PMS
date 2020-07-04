@@ -108,7 +108,6 @@ function TenantPersistentDrawer({ match }) {
   const [companyName] = useState(match.params.tenant);
 
   useEffect(() => {
-    console.log("useEffect: ", view);
   }, [match]);
 
   const handleDrawerOpen = () => {
@@ -139,7 +138,6 @@ function TenantPersistentDrawer({ match }) {
   };
 
   const onLogout = () => {
-    console.log("Clicked Logout");
     setLogout(true);
   };
 

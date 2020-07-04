@@ -26,7 +26,7 @@ app.post("/api/invitation", async (req, res) => {
   console.log(req.body);
   // destructure the email property from the http request send from the front end
   const { email, companyName } = req.body;
-  console.log(`email: ${email}, companyName: ${companyName}`);
+  //console.log(`email: ${email}, companyName: ${companyName}`);
 
   // send emails via nodemailer
   mailer.sendRegistrationEmail(email, companyName);

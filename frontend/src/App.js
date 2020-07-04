@@ -1,7 +1,7 @@
 import React from "react";
 import "./App.css";
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
-import Homepage from "./components/homepage/Homepage";
+import Homepage2 from "./components/homepage/Homepage2";
 import EmployeePersistentDrawer from "./components/menu/EmployeePersistentDrawer";
 import TenantPersistentDrawer from "./components/menu/TenantPersistentDrawer";
 import EmployeeRegisterForm from "./components/registrationForm/EmployeeRegisterForm";
@@ -12,7 +12,7 @@ function App() {
   return (
     <Router>
       <Switch>
-        <Route path="/" exact component={Homepage} />
+        <Route path="/" exact component={Homepage2} />
         <Route path="/login" exact component={LoginForm} />
         <Route path="/register" exact component={RegistrationForm} />
         <Route path="/:tenant/jobs" exact component={TenantPersistentDrawer} />

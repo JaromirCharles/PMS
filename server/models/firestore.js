@@ -88,7 +88,7 @@ async function checkCredentials(credentials) {
   var validate = false;
   var user = "";
   var companyName = "";
-  
+
   /* ----- for testing create employee
   const employee = {
     name: "Jaromir",
@@ -101,7 +101,6 @@ async function checkCredentials(credentials) {
   };
   registerEmployee(employee, passe.passe)
   */
-
 
   await db
     .collection("login")
@@ -117,14 +116,13 @@ async function checkCredentials(credentials) {
       console.log(credentials.email);
       console.log(doc.data());
 
-
       if (bcrypt.compareSync(credentials.password, doc.data().password)) {
         console.log("in here jeee");
         validate = true;
         companyName = doc.data().tenant;
         user = doc.data().user;
       } else {
-          // Passwords don't match
+        // Passwords don't match
       }
     })
     .catch((err) => {
@@ -172,34 +170,35 @@ async function getAvailableJobs(employeeEmail, companyName) {
   appliedJobs = await getAppliedJobs(employeeEmail, companyName);
   upcomingJobs = await getUpcomingJobs(employeeEmail, companyName);
 
-  appliedJobsIDs = appliedJobs.map(j => j.id);
-  upcomingJobsIDs = upcomingJobs.map(j => j.id);
+  appliedJobsIDs = appliedJobs.map((j) => j.id);
+  upcomingJobsIDs = upcomingJobs.map((j) => j.id);
 
-  myArray = availableTenantJobs.filter( ( el ) => !appliedJobsIDs.includes( el.id ) );
-  myArray = myArray.filter( ( el ) => !upcomingJobsIDs.includes( el.id ) );
+  myArray = availableTenantJobs.filter((el) => !appliedJobsIDs.includes(el.id));
+  myArray = myArray.filter((el) => !upcomingJobsIDs.includes(el.id));
 
   return myArray;
 }
 
 async function addEmpToTenantEmpArray(tenant, email) {
-  await db.collection("tenants")
-      .doc(tenant)
-      .update({
-          employees: admin.firestore.FieldValue.arrayUnion(email),
-      });
+  await db
+    .collection("tenants")
+    .doc(tenant)
+    .update({
+      employees: admin.firestore.FieldValue.arrayUnion(email),
+    });
 }
 
 async function getAppliedWorkers(company, jobID) {
   var appliedWorkers = [];
 
   let jobRef = await db
-  .collection("tenants")
-  .doc(company)
-  .collection("employees")
-  .where("appliedJobs",  "array-contains", jobID)
-  .get();
-  
-  for(applWorker of jobRef.docs) {
+    .collection("tenants")
+    .doc(company)
+    .collection("employees")
+    .where("appliedJobs", "array-contains", jobID)
+    .get();
+
+  for (applWorker of jobRef.docs) {
     appliedWorkers.push({
       name: applWorker.data().name,
       surname: applWorker.data().surname,
@@ -207,7 +206,7 @@ async function getAppliedWorkers(company, jobID) {
     });
   }
   console.log(appliedWorkers);
-  
+
   return appliedWorkers;
 }
 
@@ -221,9 +220,9 @@ async function getSelectedWorkers(company, jobID) {
     .doc(jobID)
     .get()
     .then((doc) => {
-      console.log("ooooooooooooooooooo")
-      console.log(company)
-      console.log(jobID)
+      console.log("ooooooooooooooooooo");
+      console.log(company);
+      console.log(jobID);
       if (!doc.exists) {
         console.log("##################No such document with ID %s", jobID);
       } else {
@@ -238,9 +237,8 @@ async function getSelectedWorkers(company, jobID) {
 }
 
 async function getEmployeesInfo(company, employeeList) {
-  
   var workersInfoList = [];
-  
+
   for (let index = 0; index < employeeList.length; index++) {
     let query = await db
       .collection("tenants")
@@ -260,7 +258,7 @@ async function getEmployeesInfo(company, employeeList) {
         }
       });
   }
-  
+
   return workersInfoList;
 }
 
@@ -313,8 +311,46 @@ async function updateSelectedWorkers(company, jobID, action, workers) {
 
 async function getTenantEmployees(companyName) {
   var employees = [];
+  var tenantsEmpArray = [];
 
+  // get listed employees within tenant's employees []
   await db
+    .collection("tenants")
+    .doc(companyName)
+    .get()
+    .then((doc) => {
+      tenantsEmpArray = doc.data().employees;
+    });
+
+  // get employee information for each employee in tenant's employees []
+  for (let i = 0; i < tenantsEmpArray.length; i++) {
+    await db
+      .collection("tenants")
+      .doc(companyName)
+      .collection("employees")
+      .doc(tenantsEmpArray[i])
+      .get()
+      .then((doc) => {
+        if (!doc.exists) {
+          //console.log(`${tenantsEmpArray[i]} has not registered as yet`);
+          employees.push({
+            name: "",
+            surname: "",
+            email: tenantsEmpArray[i],
+            status: "Request pending",
+          });
+        } else {
+          employees.push({
+            name: doc.data().name,
+            surname: doc.data().surname,
+            email: doc.data().email,
+            status: "active",
+          });
+        }
+      });
+  }
+
+  /* await db
     .collection("tenants")
     .doc(companyName)
     .collection("employees")
@@ -328,7 +364,7 @@ async function getTenantEmployees(companyName) {
           status: "active",
         });
       });
-    });
+    }); */
 
   return employees;
 }
@@ -442,7 +478,7 @@ async function cancelAppliedJob(employeeEmail, companyName, jobId) {
     .doc(employeeEmail);
   jobRef.update({ appliedJobs: admin.firestore.FieldValue.arrayRemove(jobId) });
 
-  return getAppliedJobs(employeeEmail, companyName)
+  return getAppliedJobs(employeeEmail, companyName);
 }
 
 async function getJobInfo(jobID, companyName) {

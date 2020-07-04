@@ -36,3 +36,150 @@
     transform: rotate(360deg);
   }
 }
+
+.homepage-grid {
+  background: #a8ff78; /* fallback for old browsers */
+  background: -webkit-linear-gradient(
+    to right,
+    #78ffd6,
+    #a8ff78
+  ); /* Chrome 10-25, Safari 5.1-6 */
+  background: linear-gradient(
+    to right,
+    #78ffd6,
+    #a8ff78
+  ); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  
+}
+
+.banner-text {
+  background-color: lightgray;
+  opacity: 1;
+  width: 100%;
+  margin: auto;
+  border-radius: 0px;
+  text-align: left;
+  padding-left: 1em;
+}
+
+.banner-buttons {
+  margin: auto;
+  text-align: right;
+  display: inline-flex;  
+  height: auto;
+  color: green;
+}
+
+.banner-text b {
+  color: black;
+  font-size: 35px;
+}
+.banner-text h1 {
+  font-size: 66px;
+  font-weight: bold;
+  color: white;
+}
+.banner-text hr {
+  border-top: 5px dotted white;
+  width: 50%;
+  margin: auto;
+  color: white;
+}
+.banner-text p {
+  color: white;
+  font-size: 20px;
+  padding: 1em;
+}
+
+.banner-text button {
+  color: black;
+  background-color: lightgray;
+  border-radius: 0.5em;
+  float: right;
+  margin: auto;
+  margin-top: 1em;;
+}
+
+.banner-text div {
+  float: right;
+}
+
+.banner-text-button button {
+  color: black;
+  background-color: lightgray;
+  border-radius: 0.5em;
+  margin: auto;
+  display: inline-flex;
+  right: -10px;
+  padding-left: 100px;
+}
+
+.content {
+  width: 66%;
+  position: absolute;
+  right: -20px
+}
+.content button {
+  color: black;
+  font-size: 30px;
+  background-color: lightgray;
+  border-radius: 0.5em;
+  text-align: left;
+}
+
+.p-title {
+  font-size: 25px;
+  font-weight: bold;
+  padding-right: 3em;
+  padding-top: 5em;
+}
+
+.p-text {
+  font-size: 20px;
+  text-align: justify;
+  padding-right: 3em;
+}
+
+
+.appBar {
+  background-color: lightgray;
+  opacity: 1;
+  width: 100%;
+  margin: auto;
+  border-radius: 0px;
+  text-align: left;
+  padding-left: 1em;
+}
+
+.title {
+  flex-grow: 1;
+  font-size: px;
+  color: black;
+  padding-left: ;
+}
+.button {
+  font-size: 30px;
+}
+
+.footer {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  color: black;
+  text-align: center;
+}
+
+.footer hr {
+  height: 3px;
+  border-top: 1px solid black;
+  width: 100%;
+  margin: auto;
+}
