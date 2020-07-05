@@ -190,7 +190,7 @@ Now the `pms` pods are exposed to the internet via a Kubernetes Service.
 One could upgrade the app to a new version by building and deploying a new Docker image to your GKE cluster. GKE's rolling update feature allows you to update your Deployments without downtime. During a rolling update, your GKE cluster will incrementally replace the existing `pms` Pods with Pods containing the Docker image for the new version. During the update, your load balancer service will route traffic only into available Pods.
 
 1. Build and tag a new `pms` Docker image.
-   1. `docker build -t gcr.io/${PROJECT_ID}/pms-client:v2`
+   1. `docker build -t gcr.io/${PROJECT_ID}/pms-client:v2 .`
 2. Push the image to Container Registry
    1. `docker push gcr.io/${PROJECT_ID}/pms-client:v2`
 3. Now one is ready to update the `app` Kubernetes Deployment to use a new Docker image
