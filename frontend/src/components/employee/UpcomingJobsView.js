@@ -49,6 +49,7 @@ const StyledTableCell = withStyles((theme) => ({
   });
   
   const columns = [
+    { id: "dateTitle", label: "Date" },
     { id: "jobtitle", label: "Job Title" },
     { id: "description", label: "Description" },
     { id: "location", label: "Location", aligh: "left" },
@@ -60,13 +61,11 @@ export default function UpcomingJobsView({ companyName, employeeEmail }) {
     const classes = useStyles();
 
     useEffect(() => {
-        console.log("::::");
-        console.log("componentDidMount UpcomingJobsView");
+        console.log("componentDidMount: UpcomingJobsView");
         fetchUpcomingJobs();
       }, []);
 
     const fetchUpcomingJobs = async () => {
-        console.log("fetchAppliedJobs: " + companyName);
         const data = await fetch("/api/employee/get_UpcomingJobs", {
           method: "POST",
           headers: {
@@ -76,6 +75,11 @@ export default function UpcomingJobsView({ companyName, employeeEmail }) {
         });
         const retJobs = await data.json();
         setUpcomingJobs(retJobs);
+    };
+
+    const formatDate = (dateString) => {
+      const options = { year: "numeric", month: "long", day: "numeric" }
+      return new Date(dateString).toLocaleDateString('en-US', options)
     };
     
 
@@ -97,6 +101,7 @@ export default function UpcomingJobsView({ companyName, employeeEmail }) {
                 <StyledTableRow
                   key={row.id}
                 >
+                  <StyledTableCell>{formatDate(row.date)}</StyledTableCell>
                   <StyledTableCell
                     className={classes.hover}
                     component="th"

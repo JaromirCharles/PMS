@@ -18,12 +18,12 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 // create a GET route
 app.get("/api/hello", (req, res) => {
-  console.log("Hello from Express");
+  //console.log("Hello from Express");
   res.send({ express: "Hello From Express" });
 });
 
 app.post("/api/invitation", async (req, res) => {
-  console.log(req.body);
+  //console.log(req.body);
   // destructure the email property from the http request send from the front end
   const { email, companyName } = req.body;
   //console.log(`email: ${email}, companyName: ${companyName}`);
@@ -39,9 +39,6 @@ app.post("/api/invitation", async (req, res) => {
 });
 
 app.post("/api/register", async (req, res) => {
-  console.log("++++++++++++++++++++");
-  console.log("received: ", req.body);
-
   const registrationSuccesfull = await firestore.registerTenant(req.body);
   res.send(registrationSuccesfull);
 });
@@ -103,7 +100,7 @@ app.post("/api/tenant_applied_workers", async function (req, res) {
 });
 
 app.post("/api/tenant_selected_workers", async function (req, res) {
-  console.log("/api/tenant_selected_workers: ", req.body);
+  //console.log("/api/tenant_selected_workers: ", req.body);
   const selectedWorkers = await firestore.getSelectedWorkers(
     req.body.companyName,
     req.body.jobID
@@ -112,7 +109,7 @@ app.post("/api/tenant_selected_workers", async function (req, res) {
 });
 
 app.post("/api/tenant_update_selected_workers", async function (req, res) {
-  console.log("/api/tenant_update_selected_workers: ", req.body);
+  //console.log("/api/tenant_update_selected_workers: ", req.body);
   await firestore.updateSelectedWorkers(
     req.body.companyName,
     req.body.jobID,
@@ -170,5 +167,4 @@ app.post("/api/employee/cancel_AppliedJob", async function (req, res) {
   res.send(appliedJobs);
 });
 
-// console.log that the server is up and running
 app.listen(port, () => console.log(`Listening on port ${port}`));

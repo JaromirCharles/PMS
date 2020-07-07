@@ -9,6 +9,14 @@ import Paper from "@material-ui/core/Paper";
 import Button from "@material-ui/core/Button";
 import TransferList from "./TransferList";
 
+import 'date-fns';
+import DateFnsUtils from '@date-io/date-fns';
+import Grid from '@material-ui/core/Grid';
+import {
+  MuiPickersUtilsProvider,
+  KeyboardTimePicker,
+  KeyboardDatePicker,
+} from '@material-ui/pickers';
 const useStyles = makeStyles((theme) => ({
   root: {
     width: "100ch",
@@ -31,6 +39,13 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
+function disablePrevDates(startDate) {
+  const startSeconds = Date.parse(startDate);
+  return (date) => {
+    return Date.parse(date) < startSeconds;
+  }
+}
+
 export default function CreateJobView({
   jobID,
   job,
@@ -45,6 +60,8 @@ export default function CreateJobView({
   const [location, setLocation] = useState("");
   const [startAndEndTime, setStartAndEndTime] = useState("");
   const [nrWorkers, setNrWorkers] = useState(0);
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const startDate = new Date();
 
   useEffect(() => {
     console.log("showWorkersList: ", showWorkersList);
@@ -57,6 +74,10 @@ export default function CreateJobView({
 
   const onClickCancel = () => {
     parentCancelCallback(true);
+  };
+
+  const handleDateChange = (date) => {
+    setSelectedDate(date);
   };
 
   const onClickSave = async () => {
@@ -85,6 +106,7 @@ export default function CreateJobView({
     // TODO OUTPUT selectedworkers before saving. see whats stored in it
 
     const newJob = {
+      date: selectedDate,
       title: title,
       description: description,
       location: location,
@@ -145,7 +167,32 @@ export default function CreateJobView({
           </AppBar>
         </div>
 
+        
+
         <form className={classes.form} noValidate autoComplete="off">
+
+          <form className={classes.container} noValidate>
+
+          <MuiPickersUtilsProvider utils={DateFnsUtils}>
+              <KeyboardDatePicker
+                shouldDisableDate={disablePrevDates(startDate)}
+                disableToolbar
+                variant="inline"
+                format="MM/dd/yyyy"
+                margin="normal"
+                id="date_time"
+                label="Date"
+                value={selectedDate}
+                onChange={handleDateChange}
+                KeyboardButtonProps={{
+                  'aria-label': 'change date',
+                }}
+              /> 
+          </MuiPickersUtilsProvider>
+
+           
+          </form>
+
           <TextField
             id="title"
             label="title"

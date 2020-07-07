@@ -99,8 +99,6 @@ function EmployeePersistentDrawer(props) {
 
   useEffect(() => {
     console.log("ComponentDidMount: EmployeePersistentDrawer " + currentMenu);
-
-    
   });
 
   const handleDrawerOpen = () => {
@@ -112,12 +110,10 @@ function EmployeePersistentDrawer(props) {
   };
 
   const handleClick = (from) => {
-    console.log("Clicked Menu Item: " + from);
     setCurrentMenu(from);
   };
 
   const onLogout = () => {
-    console.log("Clicked Logout");
     setLogout(true);
   };
 

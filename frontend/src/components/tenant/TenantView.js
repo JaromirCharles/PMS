@@ -60,6 +60,7 @@ const useStyles = makeStyles((theme) => ({
 
 const columns = [
   { id: "checkbox", label: "" },
+  { id: "dateTitle", label: "Date" },
   { id: "jobtitle", label: "Job Title" },
   { id: "description", label: "Description" },
   { id: "location", label: "Location", aligh: "left" },
@@ -103,6 +104,11 @@ export default function TenantView({
     setJobs(retJobs);
   };
 
+  const formatDate = (dateString) => {
+    const options = { year: "numeric", month: "long", day: "numeric" }
+    return new Date(dateString).toLocaleDateString('en-US', options)
+  };
+
   const fetchJobData = async (id) => {
     console.log("fetching job data with id: ", id);
     const jobData = await fetch("/api/get_job_info", {
@@ -119,10 +125,6 @@ export default function TenantView({
     console.log("received job information: ", job);
     setRetrievedJob(job.jobInfo);
   };
-
-  function createData(jobTitle, description, location, startAndEndTime, empty) {
-    return { jobTitle, description, location, startAndEndTime, empty };
-  }
 
   const onCreateJob = () => {
     parentCreateJobCallback(true);
@@ -262,6 +264,7 @@ export default function TenantView({
                     startIcon={<EditIcon fontSize="small" color="inherit" />}
                     onClick={() => onClickEdit(row.id)}
                   ></Button>
+                   <StyledTableCell>{ formatDate(row.date) }</StyledTableCell>
                   <StyledTableCell
                     className={classes.hover}
                     component="th"

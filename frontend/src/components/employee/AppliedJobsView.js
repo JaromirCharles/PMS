@@ -49,6 +49,7 @@ const StyledTableCell = withStyles((theme) => ({
   });
   
   const columns = [
+    { id: "dateTitle", label: "Date" },
     { id: "jobtitle", label: "Job Title" },
     { id: "description", label: "Description" },
     { id: "location", label: "Location", aligh: "left" },
@@ -57,40 +58,45 @@ const StyledTableCell = withStyles((theme) => ({
   ];
 
 export default function AppliedJobsView({ companyName, employeeEmail }) {
-    const [appliedJobs, setAppliedJobs] = useState([]);
-    const classes = useStyles();
+  const [appliedJobs, setAppliedJobs] = useState([]);
+  const classes = useStyles();
 
-    useEffect(() => {
-        console.log("::::");
-        console.log("componentDidMount AppliedJobsView");
-        fetchAppliedJobs();
-      }, []);
+  useEffect(() => {
+      console.log("::::");
+      console.log("componentDidMount AppliedJobsView");
+      fetchAppliedJobs();
+    }, []);
 
-    const fetchAppliedJobs = async () => {
-        console.log("fetchAppliedJobs: " + companyName);
-        const data = await fetch("/api/employee/get_AppliedJobs", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ employeeEmail, companyName }),
-        });
-        const retJobs = await data.json();
-        console.log(retJobs);
-        setAppliedJobs(retJobs);
-      };
+  const fetchAppliedJobs = async () => {
+      console.log("fetchAppliedJobs: " + companyName);
+      const data = await fetch("/api/employee/get_AppliedJobs", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ employeeEmail, companyName }),
+      });
+      const retJobs = await data.json();
+      console.log(retJobs);
+      setAppliedJobs(retJobs);
+    };
+  
+    const handleCancelClick = async (event, jobId) => {
+      const data = await fetch("/api/employee/cancel_AppliedJob", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ employeeEmail , companyName, jobId }),
+      });
+      const retJobs = await data.json();
+      fetchAppliedJobs();
+    };
     
-      const handleCancelClick = async (event, jobId) => {
-        const data = await fetch("/api/employee/cancel_AppliedJob", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ employeeEmail , companyName, jobId }),
-        });
-        const retJobs = await data.json();
-        fetchAppliedJobs();
-      }
+    const formatDate = (dateString) => {
+      const options = { year: "numeric", month: "long", day: "numeric" }
+      return new Date(dateString).toLocaleDateString('en-US', options)
+    };
 
     return (
         <Fragment>
@@ -110,6 +116,7 @@ export default function AppliedJobsView({ companyName, employeeEmail }) {
                 <StyledTableRow
                   key={row.id}
                 >
+                  <StyledTableCell>{formatDate(row.date)}</StyledTableCell>
                   <StyledTableCell
                     className={classes.hover}
                     component="th"

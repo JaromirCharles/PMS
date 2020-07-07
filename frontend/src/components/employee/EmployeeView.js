@@ -49,6 +49,7 @@ const useStyles = makeStyles({
 });
 
 const columns = [
+  { id: "dateTitle", label: "Date" },
   { id: "jobtitle", label: "Job Title" },
   { id: "description", label: "Description" },
   { id: "location", label: "Location", aligh: "left" },
@@ -62,13 +63,11 @@ export default function EmployeeView({ companyName, employeeEmail }) {
   const classes = useStyles();
 
   useEffect(() => {
-    console.log("::::");
-    console.log("componentDidMount EmployeeView");
+    console.log("componentDidMount: EmployeeView");
     fetchAvailableJobs();
   }, []);
 
   const fetchAvailableJobs = async () => {
-    console.log("fetchAvailableJobs");
     const data = await fetch("/api/available_jobs", {
       method: "POST",
       headers: {
@@ -77,7 +76,6 @@ export default function EmployeeView({ companyName, employeeEmail }) {
       body: JSON.stringify({ employeeEmail , companyName }),
     });
     const retJobs = await data.json();
-    console.log(retJobs);
     setAvailableJobs(retJobs);
   };
 
@@ -92,7 +90,12 @@ export default function EmployeeView({ companyName, employeeEmail }) {
     const body = await response.text();
     if (response.status !== 200) throw Error(body.message);
     fetchAvailableJobs();
-  }
+  };
+
+  const formatDate = (dateString) => {
+    const options = { year: "numeric", month: "long", day: "numeric" }
+    return new Date(dateString).toLocaleDateString('en-US', options)
+  };
 
 
   return (
@@ -113,6 +116,7 @@ export default function EmployeeView({ companyName, employeeEmail }) {
             <StyledTableRow
               key={row.id}
             >
+               <StyledTableCell>{formatDate(row.date)}</StyledTableCell>
               <StyledTableCell
                 className={classes.hover}
                 component="th"
