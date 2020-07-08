@@ -12,12 +12,33 @@ admin.initializeApp({
 let db = admin.firestore();
 
 async function registerTenant(tenant) {
-  let registrationSuccesfull = false;
+  let registrationSuccesfull = true;
+  let retMsg = "";
+
+  // check if email address already within system. If yes return error
+  await db
+    .collection("login")
+    .get()
+    .then((snapshot) => {
+      if (snapshot.empty) {
+        console.log("No documents in collection login");
+        return;
+      }
+      snapshot.forEach((login) => {
+        if (login.id === tenant.tenant.email) {
+          retMsg = "Email already exists";
+          registrationSuccesfull = false;
+        }
+      });
+    });
+  if (!registrationSuccesfull) {
+    return [registrationSuccesfull, retMsg]
+  }
 
   await db
     .collection("tenants")
     .doc(tenant.tenant.name)
-    .set({ email: tenant.tenant.email })
+    .set({ email: tenant.tenant.email, employees: [] })
     .then((doc) => {
       registrationSuccesfull = true;
     })
@@ -29,6 +50,7 @@ async function registerTenant(tenant) {
     if (err) {
       throw err;
     }
+    console.log("Your hash: ", hash);
 
     db.collection("login")
       .doc(tenant.tenant.email)
@@ -38,6 +60,7 @@ async function registerTenant(tenant) {
         user: "tenant",
       })
       .then(function () {
+        console.log("Document successfully written!");
         registrationSuccesfull = true;
       })
       .catch(function (error) {
@@ -45,10 +68,11 @@ async function registerTenant(tenant) {
         registrationSuccesfull = false;
       });
   });
-  return registrationSuccesfull;
+  return [registrationSuccesfull, retMsg];
 }
 
 function registerEmployee(employee, password) {
+  console.log("registerEmployee", employee.employee);
   // add employee to employees collection
   db.collection("tenants")
     .doc(employee.tenant)
@@ -60,6 +84,7 @@ function registerEmployee(employee, password) {
     if (err) {
       throw err;
     }
+    console.log("Your hash: ", hash);
 
     db.collection("login")
       .doc(employee.email)
@@ -69,7 +94,7 @@ function registerEmployee(employee, password) {
         user: "employee",
       })
       .then(function () {
-        //NOP
+        console.log("Document successfully written!");
       })
       .catch(function (error) {
         console.error("Error writing document: ", error);
@@ -106,8 +131,13 @@ async function checkCredentials(credentials) {
         console.log("No matching documents.");
         return;
       }
+      console.log("check Credentials:");
+      console.log(credentials.password);
+      console.log(credentials.email);
+      console.log(doc.data());
 
       if (bcrypt.compareSync(credentials.password, doc.data().password)) {
+        console.log("in here jeee");
         validate = true;
         companyName = doc.data().tenant;
         user = doc.data().user;
@@ -124,6 +154,7 @@ async function checkCredentials(credentials) {
 
 async function getTenantJobs(companyName) {
   var jobs = [];
+
   let query = await db
     .collection("tenants")
     .doc(companyName)
@@ -141,12 +172,14 @@ async function getTenantJobs(companyName) {
         return;
       }
       snapshot.forEach((job) => {
+        //console.log(job.id, "=>", job.data());
         jobs.push({ ...job.data(), id: job.id });
       });
     })
     .catch((err) => {
       console.log("getTenantJobs: Error getting documents", err);
     });
+  //console.log("collection Info: ", jobs);
   return jobs;
 }
 
@@ -196,6 +229,7 @@ async function getAppliedWorkers(company, jobID) {
       email: applWorker.data().email,
     });
   }
+  console.log(appliedWorkers);
 
   return appliedWorkers;
 }
@@ -211,14 +245,15 @@ async function getSelectedWorkers(company, jobID) {
     .get()
     .then((doc) => {
       if (!doc.exists) {
-        console.log("#No such document with ID %s", jobID);
+        console.log("No such document with ID %s", jobID);
       } else {
-        selectedWorkers = doc.data();
+        selectedWorkers = doc.data().selectedWorkers;
       }
     });
 
+  console.log("selectedWorkers: ", selectedWorkers);
   selectedWorkers = await getEmployeesInfo(company, selectedWorkers);
-
+  console.log("selectedWorkers with Info: ", selectedWorkers);
   return selectedWorkers;
 }
 
@@ -249,6 +284,7 @@ async function getEmployeesInfo(company, employeeList) {
 }
 
 async function updateSelectedWorkers(company, jobID, action, workers) {
+  //console.log(workers);
   let jobRef = db
     .collection("tenants")
     .doc(company)
@@ -256,6 +292,7 @@ async function updateSelectedWorkers(company, jobID, action, workers) {
     .doc(jobID);
 
   for (let index = 0; index < workers.length; index++) {
+    console.log("--", workers[index].email);
     if (action === "add") {
       // 1) add workers email to job.selectedWorkers
       jobRef.update({
@@ -316,6 +353,7 @@ async function getTenantEmployees(companyName) {
       .get()
       .then((doc) => {
         if (!doc.exists) {
+          //console.log(`${tenantsEmpArray[i]} has not registered as yet`);
           employees.push({
             name: "",
             surname: "",
@@ -332,22 +370,43 @@ async function getTenantEmployees(companyName) {
         }
       });
   }
+
+  /* await db
+    .collection("tenants")
+    .doc(companyName)
+    .collection("employees")
+    .get()
+    .then((snapshot) => {
+      snapshot.forEach((doc) => {
+        employees.push({
+          name: doc.data().name,
+          surname: doc.data().surname,
+          email: doc.data().email,
+          status: "active",
+        });
+      });
+    }); */
+
   return employees;
 }
 
 async function createNewJob(job) {
   var retVal = "failed";
+  //db.collection("tenants").doc(job.tenant.companyName).set(tenantUpdate);
   db.collection("tenants")
     .doc(job.tenant.companyName)
+    //.doc("test")
     .collection("jobs")
     .doc()
     .set(job.newJob);
-
+  console.log(job);
   return retVal;
 }
 
 async function deleteJobs(jobs) {
+  console.log(jobs.deleteJobList.deleteJobList);
   jobs.deleteJobList.deleteJobList.forEach((job) => {
+    console.log(job);
     db.collection("tenants")
       .doc(jobs.deleteJobList.tenant.companyName)
       .collection("jobs")
@@ -380,6 +439,7 @@ async function getAppliedJobs(employeeEmail, companyName) {
         console.log("_________AppliedJobsarray");
         console.log(doc.data());
         appliedJobs_array = doc.data().appliedJobs;
+        //console.log("Document data:", appliedJobs_array);
       } else {
         console.log("No applied Jobs");
       }
@@ -395,6 +455,7 @@ async function getAppliedJobs(employeeEmail, companyName) {
       .get()
       .then((doc) => {
         jobs.push({ ...doc.data(), id: doc.id });
+        console.log(doc.data());
       });
   }
   return jobs;
@@ -414,6 +475,7 @@ async function getUpcomingJobs(employeeEmail, companyName) {
         console.log("_________upcomingJobsarray");
         console.log(doc.data());
         upcomingJobs_array = doc.data().upcomingJobs;
+
       } else {
         console.log("No applied Jobs");
       }
@@ -428,6 +490,7 @@ async function getUpcomingJobs(employeeEmail, companyName) {
       .get()
       .then((doc) => {
         jobs.push({ ...doc.data(), id: doc.id });
+        console.log(doc.data());
       });
   }
   return jobs;
@@ -456,16 +519,21 @@ async function getJobInfo(jobID, companyName) {
       if (!doc.exists) {
         console.log("No such document!");
       } else {
+        //console.log('Document data: ', doc.data());
         jobInfo = doc.data();
       }
     })
     .catch((err) => {
       console.log("Error getting document", err);
     });
+  //console.log("collection Info: ", jobInfo);
   return jobInfo;
 }
 
 async function editJob(jobID, jobInfo, companyName) {
+  console.log("jobID: ", jobID);
+  console.log("jobInfo", jobInfo);
+  console.log("companyName", companyName);
   await db
     .collection("tenants")
     .doc(companyName)

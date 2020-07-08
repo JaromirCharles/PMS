@@ -62,7 +62,7 @@ export default function TransferList({ jobID, companyName }) {
     fetchAppliedWorkers();
     //const list2 = ["Benny", "e", "f"];
     //setRight(list2)
-  });
+  }, []);
 
   const fetchAppliedWorkers = async () => {
     const data = await fetch("/api/tenant_applied_workers", {
