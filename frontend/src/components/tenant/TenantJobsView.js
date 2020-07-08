@@ -13,7 +13,6 @@ import EditIcon from "@material-ui/icons/Edit";
 import AddIcon from "@material-ui/icons/Add";
 import Checkbox from "@material-ui/core/Checkbox";
 import CreateJobView from "./CreateJobView";
-//import CreateJobPopup from "./CreateJobPopup";
 
 const StyledTableCell = withStyles((theme) => ({
   head: {
@@ -68,27 +67,22 @@ const columns = [
   { id: "members", label: "Members" },
 ];
 
-export default function TenantView({
+export default function TenantJobsView({
   companyName,
   parentCancelCallback,
   parentCreateJobCallback,
+  parentEditJobCallback,
+  parentClickJobCallback
 }) {
   const classes = useStyles();
   const [deleteJobList, updateDeleteJobList] = useState([]);
   const [jobs, setJobs] = useState([]);
   const [editJob, setEditJob] = useState(false);
-  const [jobIDToEdit, setJobIDToEdit] = useState("");
   const [retrievedJob, setRetrievedJob] = useState({});
   const [refresh, setRefresh] = useState(true);
-  const [clickTitle, setClickTitle] = useState(false);
 
   useEffect(() => {
-    console.log("componentDidMount with name: ", companyName);
-    // retrieve company's jobs from firebase firestore
     fetchJobs();
-
-    // dependency might cause a problem.
-    // Keep an eye out on the components behavior.
   }, [deleteJobList, refresh]);
 
   const fetchJobs = async () => {
@@ -131,13 +125,11 @@ export default function TenantView({
   };
 
   const addJobToDeleteList = (job) => {
-    console.log("adding job to list: ", job);
     updateDeleteJobList((deleteJobList) => [...deleteJobList, job]);
   };
 
   const removeJobFromDeleteList = (jobToDelete) => {
-    console.log("removing job from list: ", jobToDelete);
-    let toDelete = jobToDelete;
+    //let toDelete = jobToDelete;
     updateDeleteJobList(deleteJobList.filter((job) => job !== jobToDelete));
   };
 
@@ -146,7 +138,6 @@ export default function TenantView({
   };
 
   const deleteJobs = async () => {
-    console.log("Deleting jobs with id: ", deleteJobList);
     const response = await fetch("/api/tenant/delete_jobs", {
       method: "POST",
       headers: {
@@ -160,11 +151,13 @@ export default function TenantView({
     if (response.status !== 200) throw Error(body.message);
     updateDeleteJobList([]);
   };
+
   const onClickEdit = async (jobID) => {
+    parentEditJobCallback(jobID)/* 
     console.log("Editing: ", jobID);
     await fetchJobData(jobID);
     setEditJob(true);
-    setJobIDToEdit(jobID);
+    setJobIDToEdit(jobID); */
   };
 
   function parentCallback() {
@@ -172,13 +165,11 @@ export default function TenantView({
     parentCancelCallback(true);
     setRefresh(!refresh);
     setEditJob(false);
-    setClickTitle(false);
   }
 
   function EditJobView() {
     return (
       <CreateJobView
-        jobID={jobIDToEdit}
         job={retrievedJob}
         companyName={companyName}
         parentCancelCallback={parentCallback}
@@ -188,10 +179,8 @@ export default function TenantView({
     );
   }
 
-  function onClickTitle(id) {
-    console.log("open Job information for: ", id)
-    setClickTitle(true);
-    onClickEdit(id);
+  function onClickTitle(jobID) {
+    parentClickJobCallback(jobID)
   }
 
   if (editJob) {
@@ -221,7 +210,7 @@ export default function TenantView({
           >
             Delete
           </Button>
-          <Button
+          {/* <Button
             className={classes.buttons}
             variant="contained"
             color="default"
@@ -229,7 +218,7 @@ export default function TenantView({
             startIcon={<EditIcon color="inherit" />}
           >
             Edit
-          </Button>
+          </Button> */}
         </div>
 
         <TableContainer component={Paper}>
@@ -256,14 +245,22 @@ export default function TenantView({
                         : removeJobFromDeleteList(row.id);
                     }}
                   />
-                  <Button
-                    style={{ outline: 0 }}
+                  <Checkbox
+                    inputProps={{ "aria-label": "uncontrolled-checkbox" }}
+                    size="small"
+                    color="default"
+                    checkedIcon={<EditIcon fontSize="small" color="inherit"/>}
+                    icon={<EditIcon fontSize="small" color="inherit"/>}
+                    onClick={() => onClickEdit(row.id)}
+                  />
+                  {/* <Button
+                    style={{ outline: 0, width: '0em' }}
                     variant="text"
                     color="default"
                     size="small"
                     startIcon={<EditIcon fontSize="small" color="inherit" />}
                     onClick={() => onClickEdit(row.id)}
-                  ></Button>
+                  ></Button> */}
                    <StyledTableCell>{ formatDate(row.date) }</StyledTableCell>
                   <StyledTableCell
                     className={classes.hover}
@@ -277,14 +274,13 @@ export default function TenantView({
                   <StyledTableCell>{row.description}</StyledTableCell>
                   <StyledTableCell>{row.location}</StyledTableCell>
                   <StyledTableCell>{row.startAndEndTime}</StyledTableCell>
-                  <StyledTableCell>{row.nrWorkersNeeded}</StyledTableCell>
+                  <StyledTableCell>{row.selectedWorkers.length} / {row.nrWorkersNeeded}</StyledTableCell>
                   {/* <StyledTableCell>{row.empty}</StyledTableCell> */}
                 </StyledTableRow>
               ))}
             </TableBody>
           </Table>
         </TableContainer>
-        {/* {showCreateJobPopup === true ? <CreateJobPopup /> : null} */}
       </Fragment>
     );
   }

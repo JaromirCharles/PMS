@@ -14,6 +14,7 @@ import {
   MuiPickersUtilsProvider,
   KeyboardDatePicker,
 } from "@material-ui/pickers";
+
 const useStyles = makeStyles((theme) => ({
   root: {
     width: "100ch",
@@ -39,13 +40,12 @@ function disablePrevDates(startDate) {
   };
 }
 
-export default function CreateJobView({
+export default function EditJobView({
+  companyName,
   jobID,
   job,
-  companyName,
-  parentCancelCallback,
-  header,
-  showWorkersList,
+  showTL,
+  returnToParentCallback,
 }) {
   const classes = useStyles();
   const [title, setTitle] = useState("");
@@ -54,26 +54,27 @@ export default function CreateJobView({
   const [startAndEndTime, setStartAndEndTime] = useState("");
   const [nrWorkers, setNrWorkers] = useState(0);
   const [selectedDate, setSelectedDate] = useState(new Date());
+
   const startDate = new Date();
 
   useEffect(() => {
-    console.log("showWorkersList: ", showWorkersList);
+    setSelectedDate(job.date);
     setTitle(job.title);
     setDescription(job.description);
     setLocation(job.location);
     setStartAndEndTime(job.startAndEndTime);
     setNrWorkers(job.nrWorkersNeeded);
   }, [
+    job.date,
     job.description,
     job.location,
     job.title,
     job.startAndEndTime,
     job.nrWorkersNeeded,
-    showWorkersList,
   ]);
 
   const onClickCancel = () => {
-    parentCancelCallback(true);
+    returnToParentCallback();
   };
 
   const handleDateChange = (date) => {
@@ -81,24 +82,6 @@ export default function CreateJobView({
   };
 
   const onClickSave = async () => {
-    if (showWorkersList) {
-      console.log("do nothing");
-      parentCancelCallback(true);
-      return;
-    }
-
-    const selectedWorkers = [];
-    if (showWorkersList) {
-      await fetch("/api/tenant_selected_workers", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ companyName, jobID }),
-      });
-      //const selectedWorkers = await data.json();
-    }
-
     const newJob = {
       date: selectedDate,
       title: title,
@@ -106,46 +89,31 @@ export default function CreateJobView({
       location: location,
       startAndEndTime: startAndEndTime,
       nrWorkersNeeded: nrWorkers,
-      selectedWorkers: selectedWorkers,
     };
 
-    // call to api to persist new job to firebase firestore
-    if (job === "") {
-      const response = await fetch("/api/tenant/create_job", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ newJob: { newJob, tenant: { companyName } } }),
-      });
-      const body = await response.text();
-      if (response.status !== 200) throw Error(body.message);
-    } else {
-      const response = await fetch("/api/tenant/edit_job", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ jobID, newJob, companyName }),
-      });
-      const body = await response.text();
-      if (response.status !== 200) throw Error(body.message);
+    const response = await fetch("/api/tenant/edit_job", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ jobID, newJob, companyName }),
+    });
+    await response.text();
+    if (response.status !== 200) {
+      console.log("Response status error");
     }
-    parentCancelCallback(true);
+    returnToParentCallback();
   };
 
   const isDisabled = () => {
-    if (job !== "") {
-      return false;
-    } else {
-      return !(
-        title &&
-        description &&
-        location &&
-        startAndEndTime &&
-        nrWorkers
-      );
-    }
+    return !(
+      selectedDate &&
+      title &&
+      description &&
+      location &&
+      startAndEndTime &&
+      nrWorkers
+    );
   };
 
   return (
@@ -155,7 +123,7 @@ export default function CreateJobView({
           <AppBar position="relative" color="primary">
             <Toolbar>
               <Typography variant="h6" color="inherit">
-                {header ? header : "Create New Job"}
+                Edit job
               </Typography>
             </Toolbar>
           </AppBar>
@@ -184,11 +152,9 @@ export default function CreateJobView({
           <TextField
             id="title"
             label="Title"
-            defaultValue={job === "" ? title : job.title}
+            value={title}
             variant="outlined"
             margin="normal"
-            //disabled={showWorkersList}
-            //required={true}
             InputLabelProps={{
               shrink: true,
             }}
@@ -202,7 +168,7 @@ export default function CreateJobView({
           <TextField
             id="description"
             label="Description"
-            defaultValue={job === "" ? description : job.description}
+            value={description}
             multiline={true}
             rowsMax={4}
             placeholder=""
@@ -221,7 +187,7 @@ export default function CreateJobView({
           <TextField
             id="location"
             label="Location"
-            defaultValue={job === "" ? location : job.location}
+            value={location}
             variant="outlined"
             InputLabelProps={{
               shrink: true,
@@ -237,7 +203,7 @@ export default function CreateJobView({
           <TextField
             id="startandendtime"
             label="Start & End Time"
-            defaultValue={job === "" ? startAndEndTime : job.startAndEndTime}
+            value={startAndEndTime}
             variant="outlined"
             InputLabelProps={{
               shrink: true,
@@ -255,7 +221,7 @@ export default function CreateJobView({
             label="# Workers"
             type="number"
             margin="normal"
-            defaultValue={job === "" ? nrWorkers : job.nrWorkersNeeded}
+            value={nrWorkers}
             InputLabelProps={{
               shrink: true,
             }}
@@ -267,22 +233,9 @@ export default function CreateJobView({
             }}
           />
           <br></br>
-          {/* {showWorkersList ? null : (
-            <Button
-              className={classes.button}
-              variant="contained"
-              color="default"
-              size="small"
-              startIcon={<AttachFileIcon color="inherit" />}
-            >
-              Attach Files
-            </Button>
-          )} */}
-
-          {showWorkersList ? (
+          {showTL ? (
             <TransferList jobID={jobID} companyName={companyName} />
           ) : null}
-
           <br></br>
           <Button
             className={classes.button}

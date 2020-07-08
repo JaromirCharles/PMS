@@ -17,8 +17,9 @@ import ListItemText from "@material-ui/core/ListItemText";
 import ExitToAppTwoToneIcon from "@material-ui/icons/ExitToAppTwoTone";
 import AccountBoxIcon from "@material-ui/icons/AccountBox";
 import { Tooltip } from "@material-ui/core";
-import TenantView from "../tenant/TenantView";
+import TenantJobsView from "../tenant/TenantJobsView";
 import CreateJobView from "../tenant/CreateJobView";
+import EditJobView from "../tenant/EditJobView";
 import PeopleAltIcon from "@material-ui/icons/PeopleAlt";
 import { ListItemIcon } from "@material-ui/core";
 import WorkIcon from "@material-ui/icons/Work";
@@ -40,6 +41,7 @@ const useStyles = makeStyles((theme) => ({
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.leavingScreen,
     }),
+    backgroundColor: "lightgrey"
   },
   appBarShift: {
     width: `calc(100% - ${drawerWidth}px)`,
@@ -54,6 +56,7 @@ const useStyles = makeStyles((theme) => ({
   },
   title: {
     flexGrow: 1,
+    color: "black"
   },
   hide: {
     display: "none",
@@ -95,20 +98,17 @@ function TenantPersistentDrawer({ match }) {
   const classes = useStyles();
   const theme = useTheme();
   const [open, setOpen] = useState(true); // set drawer to be open as default
-  const [currentMenu, setCurrentMenu] = useState(
-    window.localStorage.getItem("view")
-  );
+  
   const [view, setView] = useState(
     window.localStorage.getItem("view") || "jobs"
   );
   const [logout, setLogout] = useState(false);
-  const [jobsView, setJobsView] = useState(true);
-  const [createJob, setCreateJob] = useState(false);
-  const [employeeView, setEmployeeView] = useState(false);
   const [companyName] = useState(match.params.tenant);
+  const [jobToEdit, setJobToEdit] = useState({});
+  const [jobID, setJobID] = useState("");
+  const [showTL, setShowTL] = useState(false)
 
-  useEffect(() => {
-  }, [match]);
+  useEffect(() => {}, [match]);
 
   const handleDrawerOpen = () => {
     setOpen(true);
@@ -121,51 +121,79 @@ function TenantPersistentDrawer({ match }) {
   const handleClick = (from) => {
     window.localStorage.setItem("view", "jobs");
     setView("jobs");
-    /* setJobsView(true);
-    setCreateJob(false);
-    setEmployeeView(false);
-    setCurrentMenu(from); */
   };
 
   const employeesClick = () => {
     window.localStorage.setItem("view", "employees");
     setView("employees");
-    // ---- delete
-    /* setCurrentMenu("");
-    setJobsView(false);
-    setCreateJob(false);
-    setEmployeeView(true); */
   };
 
   const onLogout = () => {
+    localStorage.removeItem("view")
     setLogout(true);
   };
 
   const createJobCallback = (value) => {
     window.localStorage.setItem("view", "createJob");
     setView("createJob");
-    // ---- delete
-    setCurrentMenu("");
-    setCreateJob(value);
-    setJobsView(false);
   };
 
   const cancelCreateJobCallback = (value) => {
-    setCurrentMenu("Jobs in System");
+    //setCurrentMenu("Jobs in System");
     window.localStorage.setItem("view", "jobs");
     setView("jobs");
     // ---- delete
-    setJobsView(true);
-    setCreateJob(false);
+    /* setJobsView(true);
+    setCreateJob(false); */
+  };
+
+  const editJobCallback = (jobID) => {
+    window.localStorage.setItem("view", "editJob");
+    setView("editJob");
+    setJobID(jobID)
+    // get the respective job information
+    fetchJobData(jobID);
+  };
+
+  const fetchJobData = async (id) => {
+    const jobData = await fetch("/api/get_job_info", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        id,
+        companyName,
+      }),
+    });
+    const job = await jobData.json();
+    setJobToEdit(job.jobInfo);
+  };
+
+  const clickJobCallback = (jobID) => {
+    setShowTL(true);
+    window.localStorage.setItem("view", "editJob");
+    setView("editJob");
+    setJobID(jobID)
+    fetchJobData(jobID);
+  }
+
+  const returnToParentCallback = () => {
+    window.localStorage.setItem("view", "jobs");
+    setView("jobs");
+    setJobToEdit("")
+    setShowTL(false);
   };
 
   const matchView = () => {
     switch (view) {
       case "jobs":
         return (
-          <TenantView
+          <TenantJobsView
             parentCreateJobCallback={createJobCallback}
             parentCancelCallback={cancelCreateJobCallback}
+            parentEditJobCallback={editJobCallback}
+            parentClickJobCallback={clickJobCallback}
             companyName={companyName}
           />
         );
@@ -175,13 +203,24 @@ function TenantPersistentDrawer({ match }) {
         return (
           <CreateJobView
             job={""}
+            jobID={jobID}
             parentCancelCallback={cancelCreateJobCallback}
             companyName={companyName}
           />
         );
+      case "editJob":
+        return (
+          <EditJobView
+            companyName={companyName}
+            jobID={jobID}
+            job={jobToEdit}
+            showTL={showTL}
+            returnToParentCallback={returnToParentCallback}
+          />
+        );
       default:
         return (
-          <TenantView
+          <TenantJobsView
             parentCreateJobCallback={createJobCallback}
             companyName={companyName}
           />
@@ -190,7 +229,7 @@ function TenantPersistentDrawer({ match }) {
   };
 
   if (logout) {
-    return <Redirect to="/"/>;
+    return <Redirect to="/" />;
   } else {
     return (
       <div className={classes.root}>
@@ -217,7 +256,7 @@ function TenantPersistentDrawer({ match }) {
 
             <Tooltip title="Logout" arrow>
               <IconButton onClick={() => onLogout()}>
-                <ExitToAppTwoToneIcon fontSize="large" />
+                <ExitToAppTwoToneIcon fontSize="large"/>
               </IconButton>
             </Tooltip>
 
@@ -284,9 +323,8 @@ function TenantPersistentDrawer({ match }) {
           })}
         >
           <div className={classes.drawerHeader} />
-        
-          {matchView()}
 
+          {matchView()}
         </main>
       </div>
     );

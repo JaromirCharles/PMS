@@ -211,7 +211,6 @@ export default function TenantEmployeesView({ companyName }) {
 
   useEffect(() => {
     // Retrieve tenants employees information.
-    
     fetchEmployeeData();
   }, );
 

@@ -56,6 +56,7 @@ function RegistrationForm(props) {
   const [redirect, setRedirect] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
   const [alertMsg, setAlertMsg] = useState("");
+  const [invalidEmailMsg, setInvalidEmailMsg] = useState("");
 
   const handleNameInput = (e) => {
     const { value } = e.target;
@@ -88,6 +89,7 @@ function RegistrationForm(props) {
       invalid = true;
     } else if (!validate.isEmail(email)) {
       setInvalidEmail(true);
+      setInvalidEmailMsg("Please type valid email address.");
       invalid = true;
     } else if (password === "") {
       setInvalidPassword(true);
@@ -109,7 +111,7 @@ function RegistrationForm(props) {
       name: name,
       email: email,
     };
-
+    console.log("Here");
     const response = await fetch("/api/register", {
       method: "POST",
       headers: {
@@ -117,16 +119,20 @@ function RegistrationForm(props) {
       },
       body: JSON.stringify({ tenant, password }),
     });
-    const body = await response.text();
+    const body = await response.json();
     if (response.status !== 200) {
       //console.log("received error from server: ", body.message);
       //throw Error(body.message);
     }
+    //console.log("body: ", body);
 
-    if (body === "true") {
+    if (body.registrationSuccesfull === true) {
       setShowAlert(true);
       setAlertMsg("Success! Redirecting to homepage ...");
       setTimeout(() => setRedirect(true), 2000);
+    } else {
+      setInvalidEmail(true);
+      setInvalidEmailMsg(body.retMsg);
     }
   };
 
@@ -182,7 +188,7 @@ function RegistrationForm(props) {
               {invalidEmail ? (
                 <span className={classes.signuperrortext}>
                   {" "}
-                  Please type valid email address.
+                  {invalidEmailMsg}
                 </span>
               ) : null}
             </div>

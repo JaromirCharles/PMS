@@ -39,8 +39,9 @@ app.post("/api/invitation", async (req, res) => {
 });
 
 app.post("/api/register", async (req, res) => {
-  const registrationSuccesfull = await firestore.registerTenant(req.body);
-  res.send(registrationSuccesfull);
+  const [registrationSuccesfull, retMsg] = await firestore.registerTenant(req.body);
+console.log(`regSuc ${registrationSuccesfull}, retMsg ${retMsg}`)
+  res.send({ registrationSuccesfull, retMsg });
 });
 
 app.post("/api/validateLogin", async (req, res) => {
@@ -100,7 +101,6 @@ app.post("/api/tenant_applied_workers", async function (req, res) {
 });
 
 app.post("/api/tenant_selected_workers", async function (req, res) {
-  //console.log("/api/tenant_selected_workers: ", req.body);
   const selectedWorkers = await firestore.getSelectedWorkers(
     req.body.companyName,
     req.body.jobID
@@ -109,7 +109,6 @@ app.post("/api/tenant_selected_workers", async function (req, res) {
 });
 
 app.post("/api/tenant_update_selected_workers", async function (req, res) {
-  //console.log("/api/tenant_update_selected_workers: ", req.body);
   await firestore.updateSelectedWorkers(
     req.body.companyName,
     req.body.jobID,

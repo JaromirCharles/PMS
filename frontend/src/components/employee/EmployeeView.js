@@ -68,6 +68,7 @@ export default function EmployeeView({ companyName, employeeEmail }) {
   }, []);
 
   const fetchAvailableJobs = async () => {
+    console.log("here")
     const data = await fetch("/api/available_jobs", {
       method: "POST",
       headers: {

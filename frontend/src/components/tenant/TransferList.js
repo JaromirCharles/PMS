@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import Grid from "@material-ui/core/Grid";
 import List from "@material-ui/core/List";
@@ -53,9 +53,8 @@ export default function TransferList({ jobID, companyName }) {
   //const [selectedWorkersList, setSelectedWorkersList] = useState([]);
 
   useEffect(() => {
-    console.log("TransferList loaded with id: ", jobID);
     // get selected workers for job with id jobID
-     fetchSelectedWorkers();
+    fetchSelectedWorkers();
     //const list = ["Jaromir", "b", "c", "d"];
     //setLeft(list);
     // get applied workers for job with id jobID
@@ -63,7 +62,7 @@ export default function TransferList({ jobID, companyName }) {
     fetchAppliedWorkers();
     //const list2 = ["Benny", "e", "f"];
     //setRight(list2)
-  }, []);
+  });
 
   const fetchAppliedWorkers = async () => {
     const data = await fetch("/api/tenant_applied_workers", {
@@ -74,7 +73,7 @@ export default function TransferList({ jobID, companyName }) {
       body: JSON.stringify({ companyName, jobID }),
     });
     const appliedWorkers = await data.json();
-    console.log("received applied workers: ", appliedWorkers);
+    //console.log("received applied workers: ", appliedWorkers);
     setRight(appliedWorkers);
   };
 
@@ -87,10 +86,10 @@ export default function TransferList({ jobID, companyName }) {
       body: JSON.stringify({ companyName, jobID }),
     });
     const selectedWorkers = await data.json();
-    console.log("received selected workers: ", selectedWorkers);
+    //console.log("received selected workers: ", selectedWorkers);
     setLeft(selectedWorkers);
     localStorage.setItem("selectedWorkers", JSON.stringify(selectedWorkers));
-  }
+  };
 
   const handleToggle = (value) => () => {
     const currentIndex = checked.indexOf(value);
@@ -123,7 +122,7 @@ export default function TransferList({ jobID, companyName }) {
     const action = "remove";
     const list = leftChecked;
     // remove selected workers from db job's selected workers array
-    const data = await fetch("/api/tenant_update_selected_workers", {
+    await fetch("/api/tenant_update_selected_workers", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -133,14 +132,14 @@ export default function TransferList({ jobID, companyName }) {
   };
 
   const handleCheckedLeft = async () => {
-    console.log("moving items to left side: ", rightChecked)
+    console.log("moving items to left side: ", rightChecked);
     setLeft(left.concat(rightChecked));
     setRight(not(right, rightChecked));
     setChecked(not(checked, rightChecked));
-    const action = 'add';
+    const action = "add";
     const list = rightChecked;
     // add selected workers to db job's selected workers array
-    const data = await fetch("/api/tenant_update_selected_workers", {
+    await fetch("/api/tenant_update_selected_workers", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
