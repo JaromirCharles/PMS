@@ -54,6 +54,8 @@ export default function EmployeeRegisterForm({ match }) {
       surname: surname,
       email: email,
       tenant: tenant,
+      upcomingJobs: [],
+      appliedJobs: [],
     };
     console.log("employee: ", employee);
     const response = await fetch("/api/register_employee", {

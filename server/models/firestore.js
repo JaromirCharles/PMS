@@ -84,10 +84,12 @@ async function checkCredentials(credentials) {
 
   /* ----- for testing create employee
   const employee = {
-    name: "Jaromir",
+    name: "testPerson",
     surname: "Charles",
-    email: "jaromircharles@hotmail.com",
-    tenant: "Hotchocolates",
+    email: "testPerson@test.com",
+    tenant: "Umzug+",
+    upcomingJobs: [],
+    appliedJobs: [],
   };
   const passe = {
     passe: "admin",
@@ -153,11 +155,17 @@ async function getAvailableJobs(employeeEmail, companyName) {
   appliedJobs = await getAppliedJobs(employeeEmail, companyName);
   upcomingJobs = await getUpcomingJobs(employeeEmail, companyName);
 
+  console.log("________________");
+  console.log(availableTenantJobs);
+  console.log(appliedJobs);
+  console.log(upcomingJobs);
   appliedJobsIDs = appliedJobs.map((j) => j.id);
   upcomingJobsIDs = upcomingJobs.map((j) => j.id);
 
   myArray = availableTenantJobs.filter((el) => !appliedJobsIDs.includes(el.id));
   myArray = myArray.filter((el) => !upcomingJobsIDs.includes(el.id));
+  console.log("+++++++++++");
+  console.log(myArray);
 
   return myArray;
 }
@@ -256,13 +264,13 @@ async function updateSelectedWorkers(company, jobID, action, workers) {
         ),
         //selectedWorkers: db.FieldValue.arrayUnion(workerEmails),
       });
-      // 2) add jobID to emp.upcommingJobs & remove jobID from emp.appliedJobs
+      // 2) add jobID to emp.upcomingJobs & remove jobID from emp.appliedJobs
       db.collection("tenants")
         .doc(company)
         .collection("employees")
         .doc(workers[index].email)
         .update({
-          upcommingJobs: admin.firestore.FieldValue.arrayUnion(jobID),
+          upcomingJobs: admin.firestore.FieldValue.arrayUnion(jobID),
           appliedJobs: admin.firestore.FieldValue.arrayRemove(jobID),
         });
     } else {
@@ -272,13 +280,13 @@ async function updateSelectedWorkers(company, jobID, action, workers) {
           workers[index].email
         ),
       });
-      // 2) remove jobID from emp.upcommingJobs &  add jobID to emp.appliedJobs
+      // 2) remove jobID from emp.upcomingJobs &  add jobID to emp.appliedJobs
       db.collection("tenants")
         .doc(company)
         .collection("employees")
         .doc(workers[index].email)
         .update({
-          upcommingJobs: admin.firestore.FieldValue.arrayRemove(jobID),
+          upcomingJobs: admin.firestore.FieldValue.arrayRemove(jobID),
           appliedJobs: admin.firestore.FieldValue.arrayUnion(jobID),
         });
     }
@@ -369,12 +377,15 @@ async function getAppliedJobs(employeeEmail, companyName) {
     .get()
     .then((doc) => {
       if (doc.exists) {
+        console.log("_________AppliedJobsarray");
+        console.log(doc.data());
         appliedJobs_array = doc.data().appliedJobs;
       } else {
         console.log("No applied Jobs");
       }
     });
-
+  console.log("_________AppliedJobsarray");
+  console.log(appliedJobs_array);
   for (let idx = 0; idx < appliedJobs_array.length; idx++) {
     let query = await db
       .collection("tenants")
@@ -400,7 +411,9 @@ async function getUpcomingJobs(employeeEmail, companyName) {
     .get()
     .then((doc) => {
       if (doc.exists) {
-        upcomingJobs_array = doc.data().upcommingJobs;
+        console.log("_________upcomingJobsarray");
+        console.log(doc.data());
+        upcomingJobs_array = doc.data().upcomingJobs;
       } else {
         console.log("No applied Jobs");
       }
