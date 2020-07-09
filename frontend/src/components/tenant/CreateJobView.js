@@ -57,7 +57,6 @@ export default function CreateJobView({
   const startDate = new Date();
 
   useEffect(() => {
-    console.log("showWorkersList: ", showWorkersList);
     setTitle(job.title);
     setDescription(job.description);
     setLocation(job.location);

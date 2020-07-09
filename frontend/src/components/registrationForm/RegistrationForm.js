@@ -111,7 +111,7 @@ function RegistrationForm(props) {
       name: name,
       email: email,
     };
-    console.log("Here");
+
     const response = await fetch("/api/register", {
       method: "POST",
       headers: {
