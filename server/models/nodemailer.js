@@ -5,7 +5,10 @@ const nodemailer = require("nodemailer");
 
 // gmail transport
 const transporter = nodemailer.createTransport({
-  service: "gmail",
+  host: "smtp.gmail.com",
+  //service: "gmail",
+  port: 465, //587,
+  secure: true, //false,
   auth: {
     user: "pmsystememail@gmail.com",
     pass: "pmsforcad",

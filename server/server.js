@@ -33,14 +33,14 @@ app.post("/api/invitation", async (req, res) => {
   // add each email to tenant's employees list
   firestore.addEmpToTenantEmpArray(companyName, email);
 
-  res.send(
-    `I received your POST request. This is what you sent me: ${email}`
-  );
+  res.send(`I received your POST request. This is what you sent me: ${email}`);
 });
 
 app.post("/api/register", async (req, res) => {
-  const [registrationSuccesfull, retMsg] = await firestore.registerTenant(req.body);
-console.log(`regSuc ${registrationSuccesfull}, retMsg ${retMsg}`)
+  const [registrationSuccesfull, retMsg] = await firestore.registerTenant(
+    req.body
+  );
+  console.log(`regSuc ${registrationSuccesfull}, retMsg ${retMsg}`);
   res.send({ registrationSuccesfull, retMsg });
 });
 
@@ -54,7 +54,11 @@ app.post("/api/validateLogin", async (req, res) => {
 });
 
 app.post("/api/register_employee", async (req, res) => {
-  const registrationSuccessfull = await firestore.registerEmployee(req.body.employee, req.body.tenant, req.body.password);
+  const registrationSuccessfull = await firestore.registerEmployee(
+    req.body.employee,
+    req.body.tenant,
+    req.body.password
+  );
   res.send(true);
 });
 
