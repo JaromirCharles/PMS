@@ -83,7 +83,7 @@ export default function TenantJobsView({
 
   useEffect(() => {
     fetchJobs();
-  }, [deleteJobList, refresh]);
+  }, [deleteJobList, refresh]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchJobs = async () => {
     const data = await fetch("/api/tenant_jobs", {
@@ -101,23 +101,6 @@ export default function TenantJobsView({
   const formatDate = (dateString) => {
     const options = { year: "numeric", month: "long", day: "numeric" }
     return new Date(dateString).toLocaleDateString('en-US', options)
-  };
-
-  const fetchJobData = async (id) => {
-    console.log("fetching job data with id: ", id);
-    const jobData = await fetch("/api/get_job_info", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        id,
-        companyName,
-      }),
-    });
-    const job = await jobData.json();
-    console.log("received job information: ", job);
-    setRetrievedJob(job.jobInfo);
   };
 
   const onCreateJob = () => {

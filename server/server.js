@@ -54,7 +54,7 @@ app.post("/api/validateLogin", async (req, res) => {
 });
 
 app.post("/api/register_employee", async (req, res) => {
-  const registrationSuccessfull = await firestore.registerEmployee(req.body.employee, req.body.password);
+  const registrationSuccessfull = await firestore.registerEmployee(req.body.employee, req.body.tenant, req.body.password);
   res.send(true);
 });
 

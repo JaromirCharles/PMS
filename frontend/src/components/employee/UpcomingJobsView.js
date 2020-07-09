@@ -61,9 +61,8 @@ export default function UpcomingJobsView({ companyName, employeeEmail }) {
     const classes = useStyles();
 
     useEffect(() => {
-        console.log("componentDidMount: UpcomingJobsView");
         fetchUpcomingJobs();
-      }, []);
+      }, []);  // eslint-disable-line react-hooks/exhaustive-deps
 
     const fetchUpcomingJobs = async () => {
         const data = await fetch("/api/employee/get_UpcomingJobs", {
@@ -106,7 +105,6 @@ export default function UpcomingJobsView({ companyName, employeeEmail }) {
                     className={classes.hover}
                     component="th"
                     scope="row"
-                    hover
                   >
                     {row.title}
                   </StyledTableCell>

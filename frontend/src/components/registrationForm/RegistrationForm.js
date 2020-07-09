@@ -121,10 +121,9 @@ function RegistrationForm(props) {
     });
     const body = await response.json();
     if (response.status !== 200) {
-      //console.log("received error from server: ", body.message);
-      //throw Error(body.message);
+      console.log("received error from server: ", body.message);
+      throw Error(body.message);
     }
-    //console.log("body: ", body);
 
     if (body.registrationSuccesfull === true) {
       setShowAlert(true);

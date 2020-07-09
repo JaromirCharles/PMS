@@ -53,16 +53,10 @@ export default function TransferList({ jobID, companyName }) {
   //const [selectedWorkersList, setSelectedWorkersList] = useState([]);
 
   useEffect(() => {
-    // get selected workers for job with id jobID
     fetchSelectedWorkers();
-    //const list = ["Jaromir", "b", "c", "d"];
-    //setLeft(list);
-    // get applied workers for job with id jobID
-
     fetchAppliedWorkers();
-    //const list2 = ["Benny", "e", "f"];
-    //setRight(list2)
-  }, []);
+
+  }, []);   // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchAppliedWorkers = async () => {
     const data = await fetch("/api/tenant_applied_workers", {

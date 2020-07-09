@@ -7,7 +7,6 @@ import TableContainer from "@material-ui/core/TableContainer";
 import TableHead from "@material-ui/core/TableHead";
 import TableRow from "@material-ui/core/TableRow";
 import Paper from "@material-ui/core/Paper";
-import JobPopup from "./JobPopup";
 
 const StyledTableCell = withStyles((theme) => ({
   head: {
@@ -63,12 +62,10 @@ export default function EmployeeView({ companyName, employeeEmail }) {
   const classes = useStyles();
 
   useEffect(() => {
-    console.log("componentDidMount: EmployeeView");
     fetchAvailableJobs();
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchAvailableJobs = async () => {
-    console.log("here")
     const data = await fetch("/api/available_jobs", {
       method: "POST",
       headers: {
@@ -122,7 +119,6 @@ export default function EmployeeView({ companyName, employeeEmail }) {
                 className={classes.hover}
                 component="th"
                 scope="row"
-                hover
               >
                 {row.title}
               </StyledTableCell>

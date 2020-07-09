@@ -62,13 +62,10 @@ export default function AppliedJobsView({ companyName, employeeEmail }) {
   const classes = useStyles();
 
   useEffect(() => {
-      console.log("::::");
-      console.log("componentDidMount AppliedJobsView");
       fetchAppliedJobs();
-    }, []);
+    }, []);  // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchAppliedJobs = async () => {
-      console.log("fetchAppliedJobs: " + companyName);
       const data = await fetch("/api/employee/get_AppliedJobs", {
         method: "POST",
         headers: {
@@ -77,7 +74,6 @@ export default function AppliedJobsView({ companyName, employeeEmail }) {
         body: JSON.stringify({ employeeEmail, companyName }),
       });
       const retJobs = await data.json();
-      console.log(retJobs);
       setAppliedJobs(retJobs);
     };
   
@@ -89,7 +85,7 @@ export default function AppliedJobsView({ companyName, employeeEmail }) {
         },
         body: JSON.stringify({ employeeEmail , companyName, jobId }),
       });
-      const retJobs = await data.json();
+      await data.json();
       fetchAppliedJobs();
     };
     
@@ -121,7 +117,6 @@ export default function AppliedJobsView({ companyName, employeeEmail }) {
                     className={classes.hover}
                     component="th"
                     scope="row"
-                    hover
                   >
                     {row.title}
                   </StyledTableCell>

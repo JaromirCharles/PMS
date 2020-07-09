@@ -53,17 +53,16 @@ export default function EmployeeRegisterForm({ match }) {
       name: name,
       surname: surname,
       email: email,
-      tenant: tenant,
       upcomingJobs: [],
       appliedJobs: [],
     };
-    console.log("employee: ", employee);
+
     const response = await fetch("/api/register_employee", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ employee, password }),
+      body: JSON.stringify({ employee, tenant, password }),
     });
     const body = await response.text();
     if (response.status !== 200) throw Error(body.message);
