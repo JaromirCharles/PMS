@@ -8,7 +8,7 @@ const mailer = {
     // add to recipient and html: to mailOptions
     const emailBody = `Hi there,<br/><br/><b>${tenant}</b> would like you to join their Personnel Management System to always be up to date with their current jobs. Click the following link to register to <b>${tenant}'s</b> PMS.<br/><br/><a href=\"http://34.89.220.251:80/register/${tenant}\">Register now</a>`;
     const options = { ...mailOptions, to: recipient, html: emailBody };
-    //console.log(options);
+
     transporter.sendMail(options, function (err, info) {
       if (err) {
         console.error("unable to send confirmation email" + err);

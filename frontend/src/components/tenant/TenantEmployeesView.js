@@ -210,9 +210,8 @@ export default function TenantEmployeesView({ companyName }) {
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
 
   useEffect(() => {
-    // Retrieve tenants employees information.
     fetchEmployeeData();
-  }, );
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchEmployeeData = async () => {
     const company = companyName;
@@ -286,7 +285,6 @@ export default function TenantEmployeesView({ companyName }) {
       setTimeout(() => setShowSnackBar(false), 3000);
       return;
     }
-    //console.log(`Inviting '${email}' to '${companyName}' workers group`);
 
     const response = await fetch("/api/invitation", {
       method: "POST",
@@ -306,6 +304,8 @@ export default function TenantEmployeesView({ companyName }) {
     setSeverity("success");
     setTimeout(() => setShowSnackBar(false), 3000);
     setEmail("");
+
+    fetchEmployeeData();
   };
 
   const displayTable = () => {

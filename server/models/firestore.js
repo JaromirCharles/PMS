@@ -70,12 +70,19 @@ async function registerTenant(tenant) {
 }
 
 function registerEmployee(employee, tenant, password) {
+
   db.collection("tenants")
     .doc(tenant)
     .collection("employees")
     .doc(employee.email)
     .set(employee);
 
+  db.collection("tenants")
+    .doc(tenant)
+    .update({
+      pendingInvitations: FieldValue.arrayRemove(employee.email)
+   });
+  
   bcrypt.hash(password, 10, function (err, hash) {
     if (err) {
       throw err;
@@ -88,7 +95,7 @@ function registerEmployee(employee, tenant, password) {
         user: "employee",
       })
       .then(function () {
-        console.log("Document successfully written!");
+        // NOP
       })
       .catch(function (error) {
         console.error("Error writing document: ", error);
@@ -100,20 +107,6 @@ async function checkCredentials(credentials) {
   var validate = false;
   var user = "";
   var companyName = "";
-
-  /* ----- for testing create employee
-  const employee = {
-    name: "testPerson",
-    surname: "Charles",
-    email: "testPerson@test.com",
-    upcomingJobs: [],
-    appliedJobs: [],
-  };
-  const passe = {
-    passe: "admin",
-  };
-  registerEmployee(employee, "Umzug+", passe.passe)
-  */
 
   await db
     .collection("login")
@@ -159,14 +152,12 @@ async function getTenantJobs(companyName) {
         return;
       }
       snapshot.forEach((job) => {
-        //console.log(job.id, "=>", job.data());
         jobs.push({ ...job.data(), id: job.id });
       });
     })
     .catch((err) => {
       console.log("getTenantJobs: Error getting documents", err);
     });
-  //console.log("collection Info: ", jobs);
   return jobs;
 }
 
@@ -189,7 +180,7 @@ async function addEmpToTenantEmpArray(tenant, email) {
     .collection("tenants")
     .doc(tenant)
     .update({
-      employees: admin.firestore.FieldValue.arrayUnion(email),
+      pendingInvitations: admin.firestore.FieldValue.arrayUnion(email),
     });
 }
 
@@ -307,60 +298,39 @@ async function updateSelectedWorkers(company, jobID, action, workers) {
 }
 
 async function getTenantEmployees(companyName) {
+  
   var employees = [];
-  var tenantsEmpArray = [];
+  var pendingEmployeesArray = [];
 
-  // get listed employees within tenant's employees []
+  // get active employees
   await db
-    .collection("tenants")
-    .doc(companyName)
-    .get()
-    .then((doc) => {
-      tenantsEmpArray = doc.data().employees;
+  .collection("tenants")
+  .doc(companyName)
+  .collection("employees")
+  .get()
+  .then((snapshot) => {
+    snapshot.forEach((doc) => {
+      employees.push({
+        name: doc.data().name,
+        surname: doc.data().surname,
+        email: doc.data().email,
+        status: "active",
+      });
     });
+  });
 
-  // get employee information for each employee in tenant's employees []
-  for (let i = 0; i < tenantsEmpArray.length; i++) {
-    await db
-      .collection("tenants")
-      .doc(companyName)
-      .collection("employees")
-      .doc(tenantsEmpArray[i])
-      .get()
-      .then((doc) => {
-        if (!doc.exists) {
-          employees.push({
-            name: "",
-            surname: "",
-            email: tenantsEmpArray[i],
-            status: "Request pending",
-          });
-        } else {
-          employees.push({
-            name: doc.data().name,
-            surname: doc.data().surname,
-            email: doc.data().email,
-            status: "active",
-          });
-        }
-      });
-  }
+  // get employees with still pending invitation
+  await db
+  .collection("tenants")
+  .doc(companyName)
+  .get()
+  .then((doc) => {
+    pendingEmployeesArray = doc.data().pendingInvitations;
+  });
 
-  /* await db
-    .collection("tenants")
-    .doc(companyName)
-    .collection("employees")
-    .get()
-    .then((snapshot) => {
-      snapshot.forEach((doc) => {
-        employees.push({
-          name: doc.data().name,
-          surname: doc.data().surname,
-          email: doc.data().email,
-          status: "active",
-        });
-      });
-    }); */
+  pendingEmployeesArray.map(function(empl) {
+    employees.push({name: "", surname: "",email: empl, status: "request pending"});
+  });
 
   return employees;
 }

@@ -94,7 +94,6 @@ export default function TenantJobsView({
       body: JSON.stringify({ tenant: { companyName } }),
     });
     const retJobs = await data.json();
-    //console.log(retJobs);
     setJobs(retJobs);
   };
 
@@ -136,11 +135,7 @@ export default function TenantJobsView({
   };
 
   const onClickEdit = async (jobID) => {
-    parentEditJobCallback(jobID)/* 
-    console.log("Editing: ", jobID);
-    await fetchJobData(jobID);
-    setEditJob(true);
-    setJobIDToEdit(jobID); */
+    parentEditJobCallback(jobID)
   };
 
   function parentCallback() {

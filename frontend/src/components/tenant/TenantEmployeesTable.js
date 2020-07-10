@@ -218,8 +218,6 @@ export default function TenantEmployeesTable(props) {
   const [employees, setEmployees] = React.useState([]);
 
   useEffect(() => {
-    // Retrieve tenants employees information.
-    console.log("getting tenants employee info for :", props.companyName)
     fetchEmployeeData();
   }, []);
 
@@ -233,7 +231,6 @@ export default function TenantEmployeesTable(props) {
       body: JSON.stringify({ company }),
     });
     const employeeData = await data.json();
-    console.log("received: \n", employeeData);
     setEmployees(employeeData);
   }
 

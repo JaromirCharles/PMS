@@ -67,7 +67,7 @@ export default function TransferList({ jobID, companyName }) {
       body: JSON.stringify({ companyName, jobID }),
     });
     const appliedWorkers = await data.json();
-    //console.log("received applied workers: ", appliedWorkers);
+
     setRight(appliedWorkers);
   };
 
@@ -80,7 +80,7 @@ export default function TransferList({ jobID, companyName }) {
       body: JSON.stringify({ companyName, jobID }),
     });
     const selectedWorkers = await data.json();
-    //console.log("received selected workers: ", selectedWorkers);
+ 
     setLeft(selectedWorkers);
     localStorage.setItem("selectedWorkers", JSON.stringify(selectedWorkers));
   };

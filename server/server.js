@@ -18,15 +18,12 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 // create a GET route
 app.get("/api/hello", (req, res) => {
-  //console.log("Hello from Express");
   res.send({ express: "Hello From Express" });
 });
 
 app.post("/api/invitation", async (req, res) => {
-  //console.log(req.body);
-  // destructure the email property from the http request send from the front end
+
   const { email, companyName } = req.body;
-  //console.log(`email: ${email}, companyName: ${companyName}`);
 
   // send emails via nodemailer
   mailer.sendRegistrationEmail(email, companyName);
@@ -45,11 +42,9 @@ app.post("/api/register", async (req, res) => {
 });
 
 app.post("/api/validateLogin", async (req, res) => {
-  //console.log(req.body);
   const { user, validate, companyName } = await firestore.checkCredentials(
     req.body.login.credentials
   );
-  //console.log(`validate ${validate}, companyName: ${companyName}`);
   res.send({ user, validate, companyName });
 });
 
@@ -81,13 +76,11 @@ app.post("/api/tenant_employees", async function (req, res) {
 });
 
 app.post("/api/tenant/create_job", async function (req, res) {
-  //console.log("/api/tenant/create_job: ", req.body.newJob)
   const retVal = await firestore.createNewJob(req.body.newJob);
   res.send(retVal);
 });
 
 app.post("/api/tenant/edit_job", async function (req, res) {
-  //console.log(req.body)
   const retVal = await firestore.editJob(
     req.body.jobID,
     req.body.newJob,
@@ -131,7 +124,6 @@ app.post("/api/tenant/delete_jobs", async function (req, res) {
 });
 
 app.post("/api/get_job_info", async function (req, res) {
-  //console.log(req.body);
   const jobInfo = await firestore.getJobInfo(req.body.id, req.body.companyName);
   res.send({ jobInfo });
 });
