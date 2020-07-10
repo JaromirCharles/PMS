@@ -254,9 +254,9 @@ function TenantPersistentDrawer({ match }) {
               {companyName}
             </Typography>
 
-            <Tooltip title="Logout" arrow>
+            <Tooltip>
               <IconButton onClick={() => onLogout()}>
-                <ExitToAppTwoToneIcon fontSize="large"/>
+                <ExitToAppTwoToneIcon fontSize="large" />
               </IconButton>
             </Tooltip>
 
