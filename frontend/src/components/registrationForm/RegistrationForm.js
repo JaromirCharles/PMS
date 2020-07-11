@@ -21,14 +21,15 @@ const useStyles = makeStyles((theme) => ({
     color: "black",
   },
   register: {
-    flexGrow: 1,
+    //flexGrow: 1,
     width: 350,
     position: "absolute",
     left: "50%",
     top: "35%",
     transform: "translate(-50%, -50%)",
     textAlign: "center",
-    marginTop: 80,
+    alignItems: "center",
+    marginTop: 50,
   },
   header: {
     display: "flex",
@@ -141,9 +142,9 @@ function RegistrationForm(props) {
     return (
       <Fragment>
         <Fragment>
-          <AppBar className={classes.appBar} position="static">
+        <AppBar className="appBar" position="static" style={{backgroundColor: "lightgrey"}}>
             <Toolbar>
-              <Typography variant="h6" className={classes.title}>
+              <Typography variant="h6" className="title">
                 <b style={{ fontSize: 35 }}>pms</b> .{" "}
                 <b style={{ fontSize: 35 }}>p</b>ersonnel{" "}
                 <b style={{ fontSize: 35 }}>m</b>anagement{" "}

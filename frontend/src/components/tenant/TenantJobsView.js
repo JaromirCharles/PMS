@@ -202,9 +202,9 @@ export default function TenantJobsView({
         <TableContainer component={Paper}>
           <Table className={classes.table} aria-label="customized table">
             <TableHead>
-              <TableRow>
+              <TableRow >
                 {columns.map((column) => (
-                  <StyledTableCell key={column.id}>
+                  <StyledTableCell style={{backgroundColor: "#78ff9a"}} key={column.id}>
                     {column.label}
                   </StyledTableCell>
                 ))}

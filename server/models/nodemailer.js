@@ -1,7 +1,8 @@
 // models/nodemailer.js
 
 const nodemailer = require("nodemailer");
-// const config = require('../config/keys');
+const config = require('../../config/config.json');
+const auth = config.auth
 
 // gmail transport
 const transporter = nodemailer.createTransport({
@@ -9,10 +10,11 @@ const transporter = nodemailer.createTransport({
   //service: "gmail",
   port: 465, //587,
   secure: true, //false,
-  auth: {
+  auth: auth,
+  /* auth: {
     user: "pmsystememail@gmail.com",
     pass: "pmsforcad",
-  },
+  }, */
 });
 
 // mailtrap transport

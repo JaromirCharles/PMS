@@ -142,9 +142,9 @@ function LoginForm() {
     return (
       <div className={classes.root}>
         <Fragment>
-          <AppBar className={classes.appBar} position="static">
+          <AppBar className="appBar" position="static" style={{backgroundColor: "lightgrey"}}>
             <Toolbar>
-              <Typography variant="h6" className={classes.title}>
+              <Typography variant="h6" className="title">
                 <b style={{ fontSize: 35 }}>pms</b> .{" "}
                 <b style={{ fontSize: 35 }}>p</b>ersonnel{" "}
                 <b style={{ fontSize: 35 }}>m</b>anagement{" "}
