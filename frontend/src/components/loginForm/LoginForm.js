@@ -60,6 +60,7 @@ function LoginForm() {
   const [user, setUser] = useState("");
   const [companyName, setCompanyName] = useState("");
   const [email, setEmail] = useState("");
+  const [name, setName] = useState("");
   const [password, setPassword] = useState("");
   const [invalidEmail, setInvalidEmail] = useState(false);
   const [invalidPassword, setInvalidPassword] = useState(false);
@@ -90,6 +91,7 @@ function LoginForm() {
   };
 
   const handleSubmitClick = async (e) => {
+
     e.preventDefault();
 
     if (validateInput()) {
@@ -112,9 +114,22 @@ function LoginForm() {
     if (response.status !== 200) {
       //throw Error(body.message);
     }
+    
+    let companyName = body.companyName;
+    const response_name = await fetch("api/getEmployeeName", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ companyName, email }),
+    });
+    const body_name = await response_name.json();
+    console.log("loginform ");
+    console.log("loginform " + body_name.name);
 
     if (body.validate === true) {
       setInvalidCredentials(false);
+      setName(body_name.name);
       setCompanyName(body.companyName);
       setUser(body.user);
       setRedirect(true);
@@ -133,7 +148,9 @@ function LoginForm() {
           component={Link}
           to={{
             pathname: `/employee/${companyName}`,
-            state: { email: email },
+            state: { email: email,
+                     name: name
+                   },
           }}
         />
       );

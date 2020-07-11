@@ -204,7 +204,7 @@ export default function TenantJobsView({
             <TableHead>
               <TableRow >
                 {columns.map((column) => (
-                  <StyledTableCell style={{backgroundColor: "#78ff9a"}} key={column.id}>
+                  <StyledTableCell style={{backgroundColor: "#A7C9DC", color: "black"}} key={column.id}>
                     {column.label}
                   </StyledTableCell>
                 ))}

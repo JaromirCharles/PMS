@@ -163,15 +163,22 @@ function EmployeePersistentDrawer(props) {
               {companyName}
             </Typography>
 
+            
+            <IconButton>
+              
+              <div style={{fontSize: "medium", float : 'left', paddingRight : '5px'}}>
+              {props.location.state.name}
+              </div>
+              <AccountBoxIcon fontSize="large" />
+ 
+            </IconButton>
+
             <Tooltip>
               <IconButton onClick={() => onLogout()}>
                 <ExitToAppTwoToneIcon fontSize="large" />
               </IconButton>
             </Tooltip>
 
-            <IconButton>
-              <AccountBoxIcon fontSize="large" />
-            </IconButton>
           </Toolbar>
         </AppBar>
         <Drawer

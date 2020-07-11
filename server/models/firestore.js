@@ -38,7 +38,7 @@ async function registerTenant(tenant) {
   await db
     .collection("tenants")
     .doc(tenant.tenant.name)
-    .set({ email: tenant.tenant.email, employees: [] })
+    .set({ email: tenant.tenant.email, pendingInvitations: [] })
     .then((doc) => {
       registrationSuccesfull = true;
     })
@@ -80,7 +80,7 @@ function registerEmployee(employee, tenant, password) {
   db.collection("tenants")
     .doc(tenant)
     .update({
-      pendingInvitations: FieldValue.arrayRemove(employee.email)
+      pendingInvitations: admin.firestore.FieldValue.arrayRemove(employee.email)
    });
   
   bcrypt.hash(password, 10, function (err, hash) {
@@ -132,14 +132,26 @@ async function checkCredentials(credentials) {
   return { user, validate, companyName };
 }
 
+async function getEmployeeName(companyName, email) {
+  console.log("firestore "+  companyName)
+  var name = "";
+
+  await db
+  .collection("tenants")
+  .doc(companyName)
+  .collection("employees")
+  .doc(email)
+  .get()
+  .then((doc) => {
+    name = doc.data().name + " " + doc.data().surname 
+  });
+
+  console.log(name);
+  return { name };
+}
+
 async function getTenantJobs(companyName) {
   var jobs = [];
-
-  let query = await db
-    .collection("tenants")
-    .doc(companyName)
-    .collection("jobs")
-    .get();
 
   await db
     .collection("tenants")
@@ -158,6 +170,10 @@ async function getTenantJobs(companyName) {
     .catch((err) => {
       console.log("getTenantJobs: Error getting documents", err);
     });
+
+  jobs.sort(function(a, b) {
+    return new Date(b.date) - new Date(a.date);
+  });
   return jobs;
 }
 
@@ -171,7 +187,11 @@ async function getAvailableJobs(employeeEmail, companyName) {
 
   myArray = availableTenantJobs.filter((el) => !appliedJobsIDs.includes(el.id));
   myArray = myArray.filter((el) => !upcomingJobsIDs.includes(el.id));
-
+  
+  myArray.sort(function(a, b) {
+    return new Date(b.date) - new Date(a.date);
+  });
+  
   return myArray;
 }
 
@@ -350,11 +370,25 @@ async function createNewJob(job) {
 
 async function deleteJobs(jobs) {
   jobs.deleteJobList.deleteJobList.forEach((job) => {
+
     db.collection("tenants")
-      .doc(jobs.deleteJobList.tenant.companyName)
-      .collection("jobs")
-      .doc(job)
-      .delete();
+    .doc(jobs.deleteJobList.tenant.companyName)
+    .collection("employees")
+    .get()
+    .then((snapshot) => {
+      snapshot.forEach((doc) => {
+        doc.ref.update({
+          appliedJobs: admin.firestore.FieldValue.arrayRemove(job),
+          upcomingJobs: admin.firestore.FieldValue.arrayRemove(job),
+        });
+      });
+    });
+
+    db.collection("tenants")
+    .doc(jobs.deleteJobList.tenant.companyName)
+    .collection("jobs")
+    .doc(job)
+    .delete();
   });
 }
 
@@ -394,6 +428,11 @@ async function getAppliedJobs(employeeEmail, companyName) {
         jobs.push({ ...doc.data(), id: doc.id });
       });
   }
+
+  jobs.sort(function(a, b) {
+    return new Date(b.date) - new Date(a.date);
+  });
+
   return jobs;
 }
 
@@ -425,6 +464,11 @@ async function getUpcomingJobs(employeeEmail, companyName) {
         jobs.push({ ...doc.data(), id: doc.id });
       });
   }
+
+  jobs.sort(function(a, b) {
+    return new Date(b.date) - new Date(a.date);
+  });
+
   return jobs;
 }
 
@@ -488,4 +532,5 @@ module.exports = {
   updateSelectedWorkers,
   getUpcomingJobs,
   getAvailableJobs,
+  getEmployeeName,
 };

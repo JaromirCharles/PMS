@@ -41,6 +41,14 @@ app.post("/api/register", async (req, res) => {
   res.send({ registrationSuccesfull, retMsg });
 });
 
+app.post("/api/getEmployeeName", async (req, res) => {
+  const { name} = await firestore.getEmployeeName(
+    req.body.companyName,
+    req.body.email
+  );
+  res.send({ name });
+});
+
 app.post("/api/validateLogin", async (req, res) => {
   const { user, validate, companyName } = await firestore.checkCredentials(
     req.body.login.credentials
