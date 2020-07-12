@@ -191,6 +191,7 @@ One could upgrade the app to a new version by building and deploying a new Docke
 
 1. Build and tag a new `pms` Docker image.
    1. `docker build -t gcr.io/${PROJECT_ID}/pms-client:v2 .`
+      1. **NB: ** when deploying frontend, change IP address in **package.json** and in **mailer.js**
 2. Push the image to Container Registry
    1. `docker push gcr.io/${PROJECT_ID}/pms-client:v2`
 3. Now one is ready to update the `app` Kubernetes Deployment to use a new Docker image

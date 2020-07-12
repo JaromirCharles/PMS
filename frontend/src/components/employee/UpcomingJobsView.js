@@ -53,7 +53,7 @@ const StyledTableCell = withStyles((theme) => ({
     { id: "jobtitle", label: "Job Title" },
     { id: "description", label: "Description" },
     { id: "location", label: "Location", aligh: "left" },
-    { id: "startandendtime", label: "Start & End Time" },
+    { id: "startandendtime", label: "Start" },
   ];
 
 export default function UpcomingJobsView({ companyName, employeeEmail }) {
@@ -108,7 +108,7 @@ export default function UpcomingJobsView({ companyName, employeeEmail }) {
                   >
                     {row.title}
                   </StyledTableCell>
-                  <StyledTableCell>{row.description}</StyledTableCell>
+                  <StyledTableCell style={{maxWidth: 50}}>{row.description}</StyledTableCell>
                   <StyledTableCell>{row.location}</StyledTableCell>
                   <StyledTableCell>{row.startAndEndTime}</StyledTableCell>
                   

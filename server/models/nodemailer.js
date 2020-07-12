@@ -1,7 +1,7 @@
 // models/nodemailer.js
 
 const nodemailer = require("nodemailer");
-const config = require('../../config/config.json');
+const config = require('../config/config.json');
 const auth = config.auth
 
 // gmail transport

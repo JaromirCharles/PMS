@@ -63,7 +63,7 @@ const columns = [
   { id: "jobtitle", label: "Job Title" },
   { id: "description", label: "Description" },
   { id: "location", label: "Location", aligh: "left" },
-  { id: "startandendtime", label: "Start & End Time" },
+  { id: "startandendtime", label: "Start" },
   { id: "members", label: "Members" },
 ];
 
@@ -249,7 +249,7 @@ export default function TenantJobsView({
                   >
                     {row.title}
                   </StyledTableCell>
-                  <StyledTableCell>{row.description}</StyledTableCell>
+                  <StyledTableCell style={{maxWidth: 50}}>{row.description}</StyledTableCell>
                   <StyledTableCell>{row.location}</StyledTableCell>
                   <StyledTableCell>{row.startAndEndTime}</StyledTableCell>
                   <StyledTableCell>{row.selectedWorkers.length} / {row.nrWorkersNeeded}</StyledTableCell>

@@ -91,7 +91,6 @@ function LoginForm() {
   };
 
   const handleSubmitClick = async (e) => {
-
     e.preventDefault();
 
     if (validateInput()) {
@@ -114,16 +113,21 @@ function LoginForm() {
     if (response.status !== 200) {
       //throw Error(body.message);
     }
-    
+
     let companyName = body.companyName;
-    const response_name = await fetch("api/getEmployeeName", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ companyName, email }),
-    });
-    const body_name = await response_name.json();
+    let body_name = "";
+
+    if (body.user === "employee") {
+      const response_name = await fetch("api/getEmployeeName", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ companyName, email }),
+      });
+      body_name = await response_name.json();
+    }
+    
     console.log("loginform ");
     console.log("loginform " + body_name.name);
 
@@ -148,9 +152,7 @@ function LoginForm() {
           component={Link}
           to={{
             pathname: `/employee/${companyName}`,
-            state: { email: email,
-                     name: name
-                   },
+            state: { email: email, name: name },
           }}
         />
       );
@@ -159,7 +161,11 @@ function LoginForm() {
     return (
       <div className={classes.root}>
         <Fragment>
-          <AppBar className="appBar" position="static" style={{backgroundColor: "lightgrey"}}>
+          <AppBar
+            className="appBar"
+            position="static"
+            style={{ backgroundColor: "lightgrey" }}
+          >
             <Toolbar>
               <Typography variant="h6" className="title">
                 <b style={{ fontSize: 35 }}>pms</b> .{" "}

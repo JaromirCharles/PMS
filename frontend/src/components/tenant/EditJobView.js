@@ -202,7 +202,7 @@ export default function EditJobView({
           <br></br>
           <TextField
             id="startandendtime"
-            label="Start & End Time"
+            label="Start"
             value={startAndEndTime}
             variant="outlined"
             InputLabelProps={{

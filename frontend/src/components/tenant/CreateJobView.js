@@ -235,7 +235,7 @@ export default function CreateJobView({
           <br></br>
           <TextField
             id="startandendtime"
-            label="Start & End Time"
+            label="Start"
             defaultValue={job === "" ? startAndEndTime : job.startAndEndTime}
             variant="outlined"
             InputLabelProps={{
