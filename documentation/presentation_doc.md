@@ -1,6 +1,6 @@
 # Presentation documentation
 
-## Introduction
+## Introduction (homepage in the background)
 
 ##### What we implemented
 
