@@ -16,15 +16,20 @@ The main functionality of our multi-tenancy cloud native application is to allow
 * **tenants** (mainly the personnel managers) of a firm to organize their jobs and workers.
 * **employees** to have a complete overview of their tenant's jobs.
 
-A better understanding of the functionality of the application can be seen within the following user cases.
+A better understanding of the functionality of the application can be seen within the following use cases.
 
 <img src="/home/jaromir/Documents/PMS/documentation/personnel_manager_use_case.png" alt="personnel_manager_use_case" style="zoom:80%;" />
 
-The diagram above depicts the main functionalities of the **tenant**. The tenant has the ability to register his company to use our service. Upon successful registration he/she can log into the system and use its functionalities. One functionality being to invite employees to use the service whereby an email invitation will be sent to that employee via our system. The other functionality available to the tenant is to create, edit and delete jobs.
+The diagram above depicts the main functionalities of a tenant. A tenant has the ability to register his company to use the `PMS` service. Upon successful registration he/she can log into the system and use its functionalities. A tenant has basically two important functionalities: 
+
+* **organizing employees** - the personnel manager can invite employees to use their `PMS` service whereby after submitting an employee's email address, an email invitation will be sent to that employee via our system.
+* **organizing jobs** - the other functionality available is to create, edit and delete jobs. While creating a job, fields such as the date, a title and description, location and start time and number of needed workers for that job must be filled out. Employees can apply for these jobs, and the personnel manager can select from the provided list of applied workers who shall take part to accomplish said job.
+
+
 
 <img src="/home/jaromir/Documents/PMS/documentation/employee_use_case.png" alt="employee_use_case" style="zoom:100%;" />
 
-The diagram above depicts the main functionality of the user. Upon retrieval of an email invitation, he/she can register to use the PMS service of his/her company. After registration, he/she can log into the system where the employee can then apply and un-apply for desired jobs.
+The diagram above depicts the main functionalities of a user/employee. Upon retrieval of an email invitation, he/she can register themselves to use the `PMS` service of his/her company. After registration, when logged in, the employee is firstly greeted with a list of the company's current available jobs. He/she can then with free will apply and un-apply for desired jobs. A respective view for the applied and upcoming (jobs the personnel manager selected the employee to part take in) jobs are also available.
 
 
 
@@ -34,29 +39,26 @@ The diagram above depicts the main functionality of the user. Upon retrieval of 
 
 <img src="/home/jaromir/Documents/PMS/documentation/components_and_interfaces.png" alt="components_and_interfaces" style="zoom:80%;" />
 
-The image above depicts the components and interfaces of the `PMS` application. The application is broken down into two services: the `client` and the `server` both being able to run independently from one another.
+The image above depicts the components and interfaces of the `PMS` application. The application is broken down into two services: the `client` and the `server`, both being able to run independently from one another. The application runs within a Kubernetes Cluster.
 
-The `client` (developed with react JS) entails the User Interface with which the user interacts with. The client runs within a Kubernetes cluster and is visible on port `3000`.
+The `client` (developed with react JS) runs separately in a pod. The client entails the User Interface with which the user interacts with and is visible on port `3000`. The `server` (a Node JS Express server) serves the frontend with its backend logic. Its REST API handles the requests to be made to the database (`Cloud Firestore`) creating, updating and retrieving desirable information. The server also runs in a pod within the cluster and is visible to other pods on port `5000`.
 
-The `server` (a Node JS Express server) serves the frontend with its backend logic. Its REST API handles the requests to be made to the database (cloud firestore) creating updating getting desirable information. The server runs also within the Kubernetes cluster and is visible on port `5000`.
+`Cloud Firestore` is a NoSQL document database allowing the `PMS` application to easily store and query data. The database has been made available via a secure service key so that the application (server side) has full access to perform operations on the database.
 
-A `Horizontal Auto scale Load balancer` is used to distribute the load over the client pods. The Load balancer runs on port `80` and redirects the incoming traffic to the client pods.
+Within the cluster, the application is not reachable from the outside world. To expose the application outside of the cluster, a service of type `LoadBalancer` has been created to make the pods reachable via the Internet. The Load Balancer service has an external IP and redirects incoming traffic from port 80 to the application's frontend running internally on port 3000.
 
-
-
-###### Describe how the most important use cases are implemented (dynamic view)
+#### Important use cases (dynamic view)
 
 #### Cloud Provider Resources
 
-The application is hosted on `Google Cloud` and therefore we used a number of resources that Google Cloud provides. These resources used will now be discussed:
+The application is hosted on `Google Cloud` and uses a number of resources that Google Cloud provides. 
 
 * **Google Kubernetes Engine**
-  * Google's Kubernetes Engine has been used to run the application in a containerized environment. Kubernetes automates deployment, scaling and management of the containerized application.
-  * justification: Most of the work is done by Kubernetes. It handles auto up and down scaling when the specified CPU threshold has been reach. It handles the recreation of new pods of one happens to fails.
+  * Google's Kubernetes Engine has been used to run the application in a containerized environment. Kubernetes automates the deployment, scales and manages the `PMS` application. The advantages of using Kubernetes is that it does most of the work. It scales the application up and down when the specified CPU threshold has been reach. It handles the recreation of new pods if one happens to fail.
   * Alternatives: docker
 * **Firebase Firestore**
-  * The application uses a NoSQL Document store database because of its flexibility. It is more easy to add new "fields" to these documents as to their SQL counterparts. This makes implementation a lot easier and also makes it more flexible to configure different fields for different tenants. A NoSQL database also enables easier continuous integration.
-  * Alternatives
+  * The application uses a NoSQL Document store database because of its flexibility. It supports agile software engineering making implementing the application a lot easier and more flexible to sudden changes.
+  * A SQL database could have also been used to store the data but then the schema solubility would have been lost making agile engineering much harder.
 * **Container Registry**
   * Google Cloud's Container Registry has been used to store manage and secure our docker container images. The application images how ever need to be available for Kubernetes, so that Kubernetes knows where to get it images to be used to create pods.
   * justification: images are secure and private
@@ -87,24 +89,24 @@ The application is hosted on `Google Cloud` and therefore we used a number of re
    
    To achieve rapid elasticity, a Load Balancer has been set up on both client and server which will scale up when the user demands increase. The Load Balancer will also scale down if the resources are not utilized by the consumers.
    
-   Load Balancer? The load balancer allows us to scale up when a lot of requests come in and scale down when the requests retreat.
+   Load Balancer? The load balancer allows us to scale up when a lot of requests come in and scale down when the requests retreat. A `Horizontal Auto scale Load balancer` is used to distribute the load over the client pods. The Load balancer runs on port `80` and redirects the incoming traffic to the client pods.
 5. `Measured Service`
    
    1. Cloud systems automatically control and optimize resource use by leveraging a metering capability at some level of abstraction appropriate to the type of service (e.g., storage, processing, bandwidth and active user accounts). Resource usage can be monitored, controlled and reported, providing transparency for the provider and consumer.
    
    **WE dont have this**
 
-#### Describe how multi-tenancy is implemented
+#### Multi-user Multi-tenancy
 
 
 
 <img src="/home/jaromir/Documents/PMS/documentation/database_model.png" alt="database_model" style="zoom:80%;" />
 
+Different companies and users are using the same cloud provided instance of our application. Multi-tenancy/user is accomplished with our database model. With this approach we achieved lots of resource sharing, but little isolation. One collection is used for all tenants, whereby each tenant in stored in a separate document, thereby isolating the tenants from one another which is the first step in tenant isolation. A sketch of the database model can be seen above.
 
+Since all tenants share the same database resource, ensuring that no data is being leaked is a priority. Within the collection, each tenant has its own document, basically its own name-space per say. And within each tenant's document, the tenant's jobs and employees and other fields are stored, making this information only visible for said tenant.
 
-Multi-tenancy is achieved with our database model. This means we had to put a great deal of effort into ensuring that no data is being leaked. The database separates the data on a tenant level. This means that within our collection, each tenant has its own document, its own name-space. And within each tenant's document, the tenant's jobs and employees and other fields are stored, making this information only visible for said tenant.
-
-To ensure that no information is being leaked to the wrong tenant or employee, each request made contains the respective tenant's name when making requests on company level as well as the employee's email when making employee requests.
+Another step taken to ensure that no information is being wrongfully leaked to a tenant or an employee, the application ensures that each request made from a tenant entails the respective tenant's name as well as requests made by employees contain the employee's email together with his/her associated tenant's name.
 
 ###### Describe why your application is cloud native, does it implement the 12F?
 
