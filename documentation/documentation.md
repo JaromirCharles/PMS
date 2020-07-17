@@ -51,49 +51,60 @@ Within the cluster, the application is not reachable from the outside world. To 
 
 #### Cloud Provider Resources
 
-The application is hosted on `Google Cloud` and uses a number of resources that Google Cloud provides. 
+The application is hosted on `Google Cloud` and uses a few resources that Google Cloud provides. 
 
 * **Google Kubernetes Engine**
-  * Google's Kubernetes Engine has been used to run the application in a containerized environment. Kubernetes automates the deployment, scales and manages the `PMS` application. The advantages of using Kubernetes is that it does most of the work. It scales the application up and down when the specified CPU threshold has been reach. It handles the recreation of new pods if one happens to fail.
-  * Alternatives: docker
-* **Firebase Firestore**
-  * The application uses a NoSQL Document store database because of its flexibility. It supports agile software engineering making implementing the application a lot easier and more flexible to sudden changes.
-  * A SQL database could have also been used to store the data but then the schema solubility would have been lost making agile engineering much harder.
+  * Google's Kubernetes Engine has been used to run the application in a containerized environment. Kubernetes automates the deployment, scales and manages the `PMS` application. The advantages of using Kubernetes is that it does most of the work. It scales the application up and down and it handles the recreation of new pods if one happens to fail.
+  * An alternative to GKE is Docker Swarm. Both have their advantages over the other, but GKE overcame Docker Swarm in important aspects such as cluster setup, scaling, logging and monitoring and load balancing.
 * **Container Registry**
-  * Google Cloud's Container Registry has been used to store manage and secure our docker container images. The application images how ever need to be available for Kubernetes, so that Kubernetes knows where to get it images to be used to create pods.
-  * justification: images are secure and private
-  * alternatives: docker hub could also be used to store our images, but we want our image to be private
+  * Google Cloud's Container Registry has been used to store, manage and secure the application's container images. These application images need to be available for Kubernetes, so that Kubernetes knows where it can find the images it needs to create pods.
+  * Dockerhub is another well known central registry for storing `public` Docker images. We however want to control access to the application's images and thats why the Google's `private` Container Registry has been used.
+* **Firebase Firestore**
+  * The application uses a NoSQL Document store database because of its flexibility. It supports `agile software engineering` making implementing the application a lot easier and more flexible to sudden changes.
+  * A NoSQL Document store database has been chosen over a standard SQL database because with the SQL database, the schema solubility would have been lost making the agile engineering much harder.
 * **Compute Engines**
-  * Google's Compute engines are being used indirectly, as the Kubernetes cluster creates virtual machines for us to run the application.
+  * Google's Compute engines are being used indirectly, as the Kubernetes cluster creates virtual machines for its usage.
 
 #### The five essential characteristics of a cloud service [see](https://www.controleng.com/articles/five-characteristics-of-cloud-computing/)
 
-1. `On-demand self-service`
-   
-   1.  A consumer can unilaterally provision computing capabilities, such as server time and network storage, as needed automatically without requiring human interaction with each service provider.
-2. `Broad network access`
-   
-   1. Capabilities are available over the network and accessed through standard mechanisms that promote use by heterogeneous thin or thick client platforms (e.g., **[mobile](https://www.govinfosecurity.com/mobility-c-212)** phones, tablets, laptops and workstations).
-   
-   The Load balancer which was set up gives our application an public external ip address which allows all users to access our service at any time from anywhere from any device which is connected to the Internet.
-3. `Resource pooling`
-   
-   1. The provider's computing resources are pooled to serve multiple consumers using a multi-tenant model, with different physical and virtual resources dynamically assigned and reassigned according to consumer demand. There is a sense of location independence in that the customer generally has no control or knowledge over the exact location of the provided resources but may be able to specify location at a higher level of abstraction (e.g., country, state or datacenter). Examples of resources include storage, processing, memory and network bandwidth.
-   
-   Resources are shared whereby the application is accessiable to all tenants and users under the same ip address. The load balancer handles the request by up and down scaling the number of pods to be ran.  Our storage database is shared by all tenants and users. The cpu processing is shared where by when a threshold is reached, new pods will spin up.
-4. `Rapid elasticity`
-   
+***`On-demand self-service`***
+
+```
+A consumer can unilaterally provision computing capabilities, such as server time and network storage, as needed automatically without requiring human interaction with each service provider.
+```
+
+The `PMS` application is an independent service. The users, both tenants and employees, have the ability to solely register themselves to use the application and perform the provided tasks. All requests are done automatically via the cloud infrastructure without any human interaction.
+
+***`Broad network access`***
+
+```
+Capabilities are available over the network and accessed through standard mechanisms that promote use by heterogeneous thin or thick client platforms (e.g., mobile phones, tablets, laptops and workstations).
+```
+
+The Load balancer which was set up gives our application a public external IP address (`http://34.89.220.251/`)  which allows all users to access our service at any time, from anywhere, from any device which is connected to the Internet.
+
+***`Resource pooling`***
+
+```
+The provider's computing resources are pooled to serve multiple consumers using a multi-tenant model, with different physical and virtual resources dynamically assigned and reassigned according to consumer demand. There is a sense of location independence in that the customer generally has no control or knowledge over the exact location of the provided resources but may be able to specify location at a higher level of abstraction (e.g., country, state or datacenter). Examples of resources include storage, processing, memory and network bandwidth.
+```
+
+Resources are shared whereby the application is accessiable to all tenants and users under the same ip address. The load balancer handles the request by up and down scaling the number of pods to be ran.  Our storage database is shared by all tenants and users. The cpu processing is shared where by when a threshold is reached, new pods will spin up.
+
+1. `Rapid elasticity`
+
    1. Capabilities can be elastically provisioned and released, in some cases automatically, to scale rapidly outward and inward commensurate with demand. To the consumer, the capabilities available for provisioning often appear to be unlimited and can be appropriated in any quantity at any time.
-   
+
    A Horizontal Pod Autoscaler object has been created which targets the client deployment which periodically adjusts the number of replicas of the scale target to match the average CPU utilization which was specified to 80%. A maximum of 5 replicas has been set and a minimum to 1, with a cpu utilization of 80%.
-   
+
    To achieve rapid elasticity, a Load Balancer has been set up on both client and server which will scale up when the user demands increase. The Load Balancer will also scale down if the resources are not utilized by the consumers.
-   
+
    Load Balancer? The load balancer allows us to scale up when a lot of requests come in and scale down when the requests retreat. A `Horizontal Auto scale Load balancer` is used to distribute the load over the client pods. The Load balancer runs on port `80` and redirects the incoming traffic to the client pods.
-5. `Measured Service`
-   
+
+2. `Measured Service`
+
    1. Cloud systems automatically control and optimize resource use by leveraging a metering capability at some level of abstraction appropriate to the type of service (e.g., storage, processing, bandwidth and active user accounts). Resource usage can be monitored, controlled and reported, providing transparency for the provider and consumer.
-   
+
    **WE dont have this**
 
 #### Multi-user Multi-tenancy
