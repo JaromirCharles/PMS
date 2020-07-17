@@ -49,6 +49,8 @@ Within the cluster, the application is not reachable from the outside world. To 
 
 #### Important use cases (dynamic view)
 
+The most important use cases can be seen in the [Description](#Description) section.
+
 #### Cloud Provider Resources
 
 The application is hosted on `Google Cloud` and uses a few resources that Google Cloud provides. 
@@ -65,47 +67,31 @@ The application is hosted on `Google Cloud` and uses a few resources that Google
 * **Compute Engines**
   * Google's Compute engines are being used indirectly, as the Kubernetes cluster creates virtual machines for its usage.
 
-#### The five essential characteristics of a cloud service [see](https://www.controleng.com/articles/five-characteristics-of-cloud-computing/)
+#### The five essential characteristics of a cloud service
 
 ***`On-demand self-service`***
-
-```
-A consumer can unilaterally provision computing capabilities, such as server time and network storage, as needed automatically without requiring human interaction with each service provider.
-```
 
 The `PMS` application is an independent service. The users, both tenants and employees, have the ability to solely register themselves to use the application and perform the provided tasks. All requests are done automatically via the cloud infrastructure without any human interaction.
 
 ***`Broad network access`***
 
-```
-Capabilities are available over the network and accessed through standard mechanisms that promote use by heterogeneous thin or thick client platforms (e.g., mobile phones, tablets, laptops and workstations).
-```
-
-The Load balancer which was set up gives our application a public external IP address (`http://34.89.220.251/`)  which allows all users to access our service at any time, from anywhere, from any device which is connected to the Internet.
+The Load balancer which was set up to expose the application to the outside world gives a public external IP address (`http://34.89.220.251/`)  which allows all users to access our service at any time, from anywhere, from any device which is connected to the Internet.
 
 ***`Resource pooling`***
 
+Resources are shared whereby the application is accessible to all users under the same IP address. Users share the same instance of the application which in turn is run on a definite number of Virtual Machines, thereby sharing computing resources. Storage resources are also pooled whereby all users share the same database instance. More about database resource sharing will be discussed in the `Multi-tenant` section.
+
+***`Rapid elasticity`***
+
+<img src="/home/jaromir/Documents/PMS/documentation/horizontal_pod_autoscaler.png" alt="horizontal_pod_autoscaler" style="zoom: 67%;" />
+
+To be able to meet the demands of all users a `Horizontal Pod Autoscaler` was created which targets the client deployment, periodically adjusting the number of replicas of the scale target to match the average CPU utilization which was specified to `80%`. For current production, a maximum of `5` replicas and a minimum of `1` replica has been set. The number of replicas will scale up when the user demands increase and also automatically scale down if the resources are no longer utilized by the consumers.
+
+***`Measured Service`*** ??? I DON'T THINK WE HAVE THIS
+
 ```
-The provider's computing resources are pooled to serve multiple consumers using a multi-tenant model, with different physical and virtual resources dynamically assigned and reassigned according to consumer demand. There is a sense of location independence in that the customer generally has no control or knowledge over the exact location of the provided resources but may be able to specify location at a higher level of abstraction (e.g., country, state or datacenter). Examples of resources include storage, processing, memory and network bandwidth.
+Cloud systems automatically control and optimize resource use by leveraging a metering capability at some level of abstraction appropriate to the type of service (e.g., storage, processing, bandwidth and active user accounts). Resource usage can be monitored, controlled and reported, providing transparency for the provider and consumer.
 ```
-
-Resources are shared whereby the application is accessiable to all tenants and users under the same ip address. The load balancer handles the request by up and down scaling the number of pods to be ran.  Our storage database is shared by all tenants and users. The cpu processing is shared where by when a threshold is reached, new pods will spin up.
-
-1. `Rapid elasticity`
-
-   1. Capabilities can be elastically provisioned and released, in some cases automatically, to scale rapidly outward and inward commensurate with demand. To the consumer, the capabilities available for provisioning often appear to be unlimited and can be appropriated in any quantity at any time.
-
-   A Horizontal Pod Autoscaler object has been created which targets the client deployment which periodically adjusts the number of replicas of the scale target to match the average CPU utilization which was specified to 80%. A maximum of 5 replicas has been set and a minimum to 1, with a cpu utilization of 80%.
-
-   To achieve rapid elasticity, a Load Balancer has been set up on both client and server which will scale up when the user demands increase. The Load Balancer will also scale down if the resources are not utilized by the consumers.
-
-   Load Balancer? The load balancer allows us to scale up when a lot of requests come in and scale down when the requests retreat. A `Horizontal Auto scale Load balancer` is used to distribute the load over the client pods. The Load balancer runs on port `80` and redirects the incoming traffic to the client pods.
-
-2. `Measured Service`
-
-   1. Cloud systems automatically control and optimize resource use by leveraging a metering capability at some level of abstraction appropriate to the type of service (e.g., storage, processing, bandwidth and active user accounts). Resource usage can be monitored, controlled and reported, providing transparency for the provider and consumer.
-
-   **WE dont have this**
 
 #### Multi-user Multi-tenancy
 
