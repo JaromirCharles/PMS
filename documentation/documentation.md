@@ -105,6 +105,8 @@ To be able to meet the demands of all users a `Horizontal Pod Autoscaler` was cr
 
 ***`Measured Service`*** ??? I DON'T THINK WE HAVE THIS
 
+Add if greater 80%
+
 ```
 Cloud systems automatically control and optimize resource use by leveraging a metering capability at some level of abstraction appropriate to the type of service (e.g., storage, processing, bandwidth and active user accounts). Resource usage can be monitored, controlled and reported, providing transparency for the provider and consumer.
 ```
@@ -196,7 +198,7 @@ For demonstration purposes we added a registration page for the tenant where he 
 5. **Push the Docker images to Google's Container Registry**
 
    ```shell
-   sudo docker push gcr.io/${PROJECT_ID}/pms-xxx:v1
+   sudo docker push gcr.io/${PROJECT_ID}/pms_xxx:v1
    ```
 
 6. **Create a GKE cluster with a unique name**
@@ -209,67 +211,53 @@ For demonstration purposes we added a registration page for the tenant where he 
 
 7. **Deploy application to GKE**
 
-   Now we can deploy the docker image we built to the GKE cluster. Kubernetes represents applications as Pods, which are scalable units holding one or more containers. We will create a Kubernetes Deployment to run `PMS` on the cluster. The deployment will have 3 replicas(pods). One deployment pod will contain only one container, the pms application docker image. We will also create a HorizonalPodAutoscaler resource that will scale the number of Pods from 3 to a number between 1 and 5, based on CPU load.
+   Now we can deploy the docker image we built to the GKE cluster. Kubernetes represents applications as Pods, which are scalable units holding one or more containers. We will create a Kubernetes Deployment to run `PMS` on the cluster. The deployment will have 3 replicas (pods). We will also create a HorizonalPodAutoscaler resource that will scale the number of Pods from 3 to a number between 1 and 5, based on CPU load.
 
-   Create a Kubernetes Deployment for the pms Docker image
+   Create a Kubernetes Deployment for the pms frontend and backend Docker image
 
-   ```
-   kubectl create deployment pms --image=gcr.io/${PROJECT_ID}/pms:v1
+   ```shell
+   kubectl create deployment pms_frontend --image=gcr.io/${PROJECT_ID}/pms_frontend:v1
+   kubectl create deployment pms_backend --image=gcr.io/${PROJECT_ID}/pms_backend:v1
    ```
 
    Set the baseline number of Deployment replicas to 3
 
-   ```
-   kubectl scale deployment pms --replicas=3`
-   ```
-
-   Create a HorizontalPodAutoscaler resource for your deployment
-
-   ```
-   kubectl autoscale deployment pms --cpu-percent=80 --min=1 --max=5
+   ```shell
+   kubectl scale deployment pms_frontend --replicas=3
    ```
 
-   To see the pods created, run the following command
+   Create a HorizontalPodAutoscaler resource
 
-   ```
-   kubectl get pods
-   ```
-
-      \* if it fails try FIX: `gcloud container clusters get-credentials pms-cluster --zone europe-west3-a`
-
-8. **Expose the pms app to the internet**
-
-   While pods do have individually-assigned Ip addressed, those IPs can only be reached from inside your cluster. Also, GKE Pods are designed to be ephemeral(lasting for a very short time), spinning up or down based on scaling needs. We need a way to `1)` group pods together into one static hostname, and `2)` expose a group of Pods outside the cluster, to the internet. Kubernetes Services solve for both these problems. Services group Pods into one static IP address, reachable from any Pod inside the cluster. GKE also assigns a DNS hostname to that static IP. To expose a Kubernetes Service outside the cluster, you will create a service of type *LoadBalancer*. This type of Service spawns an External Load balancer IP for a set of Pods, reachable via the internet.
-
-   Use the kubectl expose command to generate a Kubernetes Service for the pms deployment:
-
-   ```
-   kubectl expose deployment pms --name=pms-service --type=LoadBalancer --port 80 --target-port 3000
+   ```shell
+   kubectl autoscale deployment pms_frontend --cpu-percent=80 --min=1 --max=5
    ```
 
-   \* Here, the `--port` flag specifies the port number configured on the Load Balancer, and the                  `-- target-port` flag specifies the port number that the `pms` app container is listening on.
+8. **Expose the application to the Internet**
 
-9. **Deploy a new version of the pms app**
+   While pods do have individually-assigned IP addressed, those IP addresses can only be reached from inside your cluster. We need a way to `1)` group pods together into one static host name, and `2)` expose a group of Pods outside the cluster, to the Internet. Kubernetes Services solve for both these problems. To expose a Kubernetes Service outside the cluster, we created a service of type *LoadBalancer*. This type of Service spawns an External Load balancer IP for a set of Pods, reachable via the Internet.
 
-   One could upgrade the app to a new version by building and deploying a new Docker image to your GKE cluster. GKE's rolling update feature allows you to update your Deployments without downtime. During a rolling update, your GKE cluster will incrementally replace the existing `pms` Pods with Pods containing the Docker image for the new version. During the update, your load balancer service will route traffic only into available Pods.
+   Use the kubectl expose command to generate a Kubernetes Service for the pms_frontend and backend deployment:
 
-   1. Build and tag a new `pms` Docker image.
+   ```shell
+   kubectl expose deployment pms_frontend --name=pms_frontend_service --type=LoadBalancer --port 80 --target-port 3000
+   kubectl expose deployment pms_backend --name=pms_backend_service --type=LoadBalancer --port 5000 --target-port 5000
+   ```
 
-     `docker build -t gcr.io/${PROJECT_ID}/pms-client:v2 .`
+9. **Deploy a new version of the application
 
-      *\*NB: \* when deploying frontend, change IP address in \**package.json\* and in \**mailer.js\**-> future .env file
+   One could update the application to a new version by building and deploying a new Docker image to your GKE cluster. GKE's rolling update feature allows you to update your Deployments without downtime. During the update, your load balancer service will route traffic only into available Pods.
+
+   1. Build and tag a new Docker image (frontend/server).
+
+     `docker build -t gcr.io/${PROJECT_ID}/pms_xxx:v2 .`
 
    2. Push the image to Container Registry
 
-     `docker push gcr.io/${PROJECT_ID}/pms-client:v2`
+     `docker push gcr.io/${PROJECT_ID}/pms_xxx:v2`
 
-   3. Now one is ready to update the `app` Kubernetes Deployment to use a new Docker image
+   3. Now one is ready to update the Kubernetes Deployment to use a new Docker image. Apply a rolling update to the existing deployment with an image update:
 
-      Apply a rolling update to the existing deployment with an image update
-
-      `kubectl set image deployment/pms-client pms-client=gcr.io/${PROJECT_ID}/pms-client:v2`
-
-   
+   `kubectl set image deployment/pms_client pms_client=gcr.io/${PROJECT_ID}/pms_client:v2`
 
 ### DevOps approach
 Since the DevOps approach is viewed as the collaboration between software developers and IT operations; Agile development, collaboration and communication are the keys of our DevOps approach.
