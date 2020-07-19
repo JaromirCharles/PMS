@@ -105,7 +105,7 @@ To be able to meet the demands of all users a `Horizontal Pod Autoscaler` was cr
 
 ***`Measured Service`*** ??? I DON'T THINK WE HAVE THIS
 
-Add if greater 80%
+**Add if greater 80%**
 
 ```
 Cloud systems automatically control and optimize resource use by leveraging a metering capability at some level of abstraction appropriate to the type of service (e.g., storage, processing, bandwidth and active user accounts). Resource usage can be monitored, controlled and reported, providing transparency for the provider and consumer.
