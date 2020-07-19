@@ -2,6 +2,8 @@
 
 Group: **CloudJB** (Jaromir Charles, Benjamin Herrmann) 
 
+GitHub: https://github.com/JaromirCharles/PMS
+
 ## Table of Contents
 
 1. [Description](#Description)
@@ -31,7 +33,7 @@ The diagram above depicts the main functionalities of a tenant. A tenant has the
 
 The diagram above depicts the main functionalities of a user/employee. Upon retrieval of an email invitation, he/she can register themselves to use the `PMS` service of his/her company. After registration, when logged in, the employee is firstly greeted with a list of the company's current available jobs. He/she can then with free will apply and un-apply for desired jobs. A respective view for the applied and upcoming (jobs the personnel manager selected the employee to part take in) jobs are also available.
 
-
+<div style="page-break-after: always;"></div>
 
 ## Application Architecture & Design
 
@@ -47,9 +49,23 @@ The `client` (developed with react JS) runs separately in a pod. The client enta
 
 Within the cluster, the application is not reachable from the outside world. To expose the application outside of the cluster, a service of type `LoadBalancer` has been created to make the pods reachable via the Internet. The Load Balancer service has an external IP and redirects incoming traffic from port 80 to the application's frontend running internally on port 3000.
 
-#### Important use cases (dynamic view)
+#### Important use cases
 
-The most important use cases can be seen in the [Description](#Description) section.
+The most important use cases can be seen in the [Description](#Description) section. Further we'll look a bit more into the implementation behind these use cases.
+
+**Tenant: Register to PMS** The tenant has the ability to register himself to use the `PMS` service. If the tenant clicks on `register` he has the opportunity to fill out a form and submit. He/she will not be able to log in with the data entered.
+
+**Tenant: Invite workers** Inviting workers to use their `PMS` services is a main tenant functionality of the application. After logging in, the tenant can select the `Employees` menu and has the ability to submit an email address, thereby sending an email to that address. The tenant will also see a list of all the employees he/she has added in a table format.
+
+**Tenant: Create, Edit, Delete Job** After logging in, the tenant has the ability to create, edit and delete a job with the click of a button. Clicking on `CREATE JOB` the tenant can fill out a form with job information like the date, title, description, etc. Submitting the form will result in the job being persisted to the database. Clicking on `Edit` the tenant can edit the job's information and clicking on `DELETE` will result in deleting the job from the system.
+
+**Tenant: View and accept applicants** If the tenant selects a job, along with the job information, two lists `selected` and `applied` will also appear where the tenant can see which employees applied for said job as well as assign employees to that job.
+
+Above we discussed the main use cases of a tenant. Now we will look at the main use cases of an employee.
+
+**Employee: Register to PMS** Upon receiving an email invitation to join a company's `PMS` service, the employee has the ability to submit a form with his log in information, thereby gaining access to the service.
+
+**Employee: Views** After logging in, the employee can select between three different views from the menu bar. `Available jobs`, `Applied jobs` and `Upcoming jobs`. The Available jobs shows the current jobs that are available to part take in. The employee has the ability with a mouse click to apply for this job. In the Applied jobs view the employee can see all the jobs he applied for as well as to cancel the job. And within the final view, Upcoming jobs, the employee receives an overview of all the jobs he as been assigned to.
 
 #### Cloud Provider Resources
 
@@ -105,144 +121,207 @@ Since all tenants share the same database resource, ensuring that no data is bei
 
 Another step taken to ensure that no information is being wrongfully leaked to a tenant or an employee, the application ensures that each request made from a tenant entails the respective tenant's name as well as requests made by employees contain the employee's email together with his/her associated tenant's name.
 
-###### Describe why your application is cloud native, does it implement the 12F?
+#### Cloud Native with 12F
 
-The application implements the twelve cloud native factors. **(1)** The application's `Codebase` is hosted on GitHub
+In the following we describe how the main characteristic of cloud native Containers, Continuous delivery, Micro-services and DevOps are implemented in our application.
+
+With docker we have created two `containers` which provide an isolated workspace for our application. The client container contains everything related to the frontend and is reachable on port 3000. The server container is responsible for the backend logic, running on port 5000.
+
+We support `Micro-services` with Containers and Kubernetes. Frontend and backend are separated from each other. They can be upgraded, scaled and deployed independently. (see graph in chapter "Application Architecture&Design) Further services can be easily integrated in the application.  
+
+Our ``Continuous delivery`` approach starts by making sure that our code is always in a deployable state. That means that changes on code level are tested locally and reviewed. With Travis CI we ensure that all new code is automatically and consistently tested for errors. The next step is to automatically deploy every build into a production-like environment. In our case this process of automatically deployment is not yet configured, so that we have to do it manually with three commands (docker build, docker push and kubectl set image). 
+
+Our ``DevOps`` approach is described in chapter Operations.
+
+**Twelve Cloud Native factors:**
+
+ **(1)** The application's `Codebase` is hosted with the version control system Git on GitHub. **(2)** For our dependency handling we use npm and yarn. All `Dependencies` are stored in the package.json file which is checked into version control to get started quickly in a repeatable way and it helps to easily track changes to dependencies. **(3)** As for now we have no  `Configuration` external to the code which will be changed for different environments. **(4)** `Backing services` are not part of our application. **(5)** The `Build and release and run` phase is in our case the process to the next deployment on the server after committing a new feature or important changes (see Continuous delivery approach). **(6)** Our application is executed as one or more stateless `Processes`. Persisted data is directly stored in the Firestore database. **(7)** `Port binding` is used for our backend Port 5000 and frontend port 3000. **(8)** `Concurrency` We configured Kubernetes to scale up or down the number of pods running in the cluster based on the CPU workload. **(9)** `Disposability` Our application can be gracefully started and stopped. **(10)** The application is designed to keep the gap between development and production small.`Dev/prod parity` The way from development/code commit to deploy is kept short and is therefore realizable in a view seconds. With Docker we can ensure that the application stack keeps its shape and instrumentation across environments. **(11)** For our cluster a logging agent from Google is automatically deployed on every node and collects `Logs ` with relevant meta-data. The can be review using Cloud Logging. **(12)** Up to this point we have no `Admin processes` or repeatable administration tasks for our application.
+
+<div style="page-break-after: always;"></div>
 
 ## Operations
 
 ### Adding a new tenant
 
-### Installing application on the cloud provider
+For demonstration purposes we added a registration page for the tenant where he enters his personal data (NB: In real life the entire registration process works obviously different). After successful registration his personal data will get saved in the firestore database. On database level a new tenant registration results in an new unique entry with the tenant's name in the `tenant` collection where all the other registered tenants are listed. Each tenant holds its custom data starting from this entry on. This helps us to separate the data on a tenant level. In addition to that a new entry in the `login` collection with an encrypted password and role of user is added for login validation. Now the tenant is able to login with his personal data.
+
+### Installing the application on the cloud provider
+
+1. **Use Cloud shell with already installed gcloud und kubectl without any additional setup. Otherwise install manually.**
+
+   Install the Google Cloud SDK.
+
+   Install the Kubernetes command-line tool. `kubectl` is used to communicate with Kubernetes.
+
+   ```shell
+   gcloud components install kubectl
+   ```
+
+2. **set defaults:** 
+
+   set project ID on the Console. our PMS ID is `apt-momentum-279610`
+
+   ```shell
+   export PROJECT_ID=apt-momentum-279610
+   gcloud config set ${PROJECT_ID}
+   gcloud config set compute/zone europe-west3
+   gcloud auth configure-docker
+   ```
+
+3. **clone our application from GitHub**
+
+   ```shell
+   git clone https://github.com/JaromirCharles/PMS.git
+   cd PMS
+   ```
+
+4. **Build and tag the Docker image** 
+
+   Our application comes with Dockerfiles needed to build the Docker images of the application.
+
+   container image backend:
+
+   ```shell
+   cd server
+   sudo docker build -t gcr.io/${PROJECT_ID}/pms_backend:v1 .
+   ```
+
+   container image frontend:
+
+   ```shell
+   cd frontend
+   sudo docker build -t gcr.io/${PROJECT_ID}/pms_frontend:v1 .
+   ```
+
+5. **Push the Docker images to Google's Container Registry**
+
+   ```shell
+   sudo docker push gcr.io/${PROJECT_ID}/pms-xxx:v1
+   ```
+
+6. **Create a GKE cluster with a unique name**
+
+   Now that the Docker image is stored in Container Registry, you need to create a GKE cluster to run our `PMS` application. A GKE cluster consists of a pool of Compute Engine VM instances running Kubernetes.
+
+   ```
+   gcloud container clusters create pms-cluster
+   ```
+
+7. **Deploy application to GKE**
+
+   Now we can deploy the docker image we built to the GKE cluster. Kubernetes represents applications as Pods, which are scalable units holding one or more containers. We will create a Kubernetes Deployment to run `PMS` on the cluster. The deployment will have 3 replicas(pods). One deployment pod will contain only one container, the pms application docker image. We will also create a HorizonalPodAutoscaler resource that will scale the number of Pods from 3 to a number between 1 and 5, based on CPU load.
+
+   Create a Kubernetes Deployment for the pms Docker image
+
+   ```
+   kubectl create deployment pms --image=gcr.io/${PROJECT_ID}/pms:v1
+   ```
+
+   Set the baseline number of Deployment replicas to 3
+
+   ```
+   kubectl scale deployment pms --replicas=3`
+   ```
+
+   Create a HorizontalPodAutoscaler resource for your deployment
+
+   ```
+   kubectl autoscale deployment pms --cpu-percent=80 --min=1 --max=5
+   ```
+
+   To see the pods created, run the following command
+
+   ```
+   kubectl get pods
+   ```
+
+      \* if it fails try FIX: `gcloud container clusters get-credentials pms-cluster --zone europe-west3-a`
+
+8. **Expose the pms app to the internet**
+
+   While pods do have individually-assigned Ip addressed, those IPs can only be reached from inside your cluster. Also, GKE Pods are designed to be ephemeral(lasting for a very short time), spinning up or down based on scaling needs. We need a way to `1)` group pods together into one static hostname, and `2)` expose a group of Pods outside the cluster, to the internet. Kubernetes Services solve for both these problems. Services group Pods into one static IP address, reachable from any Pod inside the cluster. GKE also assigns a DNS hostname to that static IP. To expose a Kubernetes Service outside the cluster, you will create a service of type *LoadBalancer*. This type of Service spawns an External Load balancer IP for a set of Pods, reachable via the internet.
+
+   Use the kubectl expose command to generate a Kubernetes Service for the pms deployment:
+
+   ```
+   kubectl expose deployment pms --name=pms-service --type=LoadBalancer --port 80 --target-port 3000
+   ```
+
+   \* Here, the `--port` flag specifies the port number configured on the Load Balancer, and the                  `-- target-port` flag specifies the port number that the `pms` app container is listening on.
+
+9. **Deploy a new version of the pms app**
+
+   One could upgrade the app to a new version by building and deploying a new Docker image to your GKE cluster. GKE's rolling update feature allows you to update your Deployments without downtime. During a rolling update, your GKE cluster will incrementally replace the existing `pms` Pods with Pods containing the Docker image for the new version. During the update, your load balancer service will route traffic only into available Pods.
+
+   1. Build and tag a new `pms` Docker image.
+
+     `docker build -t gcr.io/${PROJECT_ID}/pms-client:v2 .`
+
+      *\*NB: \* when deploying frontend, change IP address in \**package.json\* and in \**mailer.js\**-> future .env file
+
+   2. Push the image to Container Registry
+
+     `docker push gcr.io/${PROJECT_ID}/pms-client:v2`
+
+   3. Now one is ready to update the `app` Kubernetes Deployment to use a new Docker image
+
+      Apply a rolling update to the existing deployment with an image update
+
+      `kubectl set image deployment/pms-client pms-client=gcr.io/${PROJECT_ID}/pms-client:v2`
+
+   
 
 ### DevOps approach
-As a team of 2 developers, we utilized `GitHub` to manage the changes made to the source code as well as for collaboration. To keep track of what needs to be done within the project, we used GitHubs project boards so that the team has an overview of what needs to be done, what is currently in progress, what needs to be reviewed and what has already been done. **INSERT PICTURE??**.
+Since the DevOps approach is viewed as the collaboration between software developers and IT operations; Agile development, collaboration and communication are the keys of our DevOps approach.
 
+For Agile development we tried to integrate Continuous Delivery practices which we already described in the chapter *Application Architecture & Design*.  So we created an environment where building, testing and releasing software happens rapidly and frequently to constantly delivering high-quality software.
 
+As a team of 2 developers, we utilized `GitHub` to manage the changes made to the source code as well as for collaboration.  For communication we used ``Slack`` (chatting,  sharing content) and ``Discord`` (talking and sharing knowledge).  With the continuous integration platform Travis CI we ensured that all new code is automatically and consistently tested for errors.  
 
-## Cost Calculation & Business Model
+To keep track of what needs to be done within the project, we used GitHub project boards so that the team has an overview of what needs to be done, what is currently in progress, what needs to be reviewed and what has already been done.
 
+<img src="/home/jaromir/MSI/CAD/doc/PMS/documentation/devOps1.JPG" alt="devOps1" style="zoom: 50%;" />
 
+<img src="/home/jaromir/MSI/CAD/doc/PMS/documentation/devOps2.JPG" alt="devOps2" style="zoom: 50%;" />
 
----
+### Application's security model
 
-**Tenant: Register, unregister to PMS**
+The most important aspect of our security model is the registration/login with a valid password. On database level passwords of users are stored encrypted with the help of bcrypt. Bcrypt is a Node.js-Module which incorporates not only a salt to protect against rainbow tables, moreover it remains resistant to brute-force attacks because an increased iteration count slows down the attack.
 
-*As a tenant I would like to register/unregister my company to PMS.*
+Another important aspect is *`who`* has *`what`* access to *`which`* resource. We have two groups defined, tenants (the companies) and users (the employees of the company). The Login decides which role is applied and what the tenant/user will see and can do. The relevant data for login is stored in a separate table in Firestore including the role of the user. That means the application separates the data in the database on a tenant level as well as employee level. More information can be found in the section [Multi-user Multi-tenancy](#Multi-user Multi-tenancy)
 
-<u>Acceptance Criteria:</u>
+Our logging can also be mentioned here. All logs gets persisted in a data store from Google and can be reviewed using Cloud Logging. So we are able to monitor them to check user activities and take notice of conspicuous behavior.
 
-1. Possibility to register my company to use PMS's services.
-2. Possibility to unregister my company to no longer use PMS's services.
+### Telemetry data
 
----
+We installed Prometheus for better monitoring and health checks but as other things were more important we didn't had the time to configure it properly to our needs. So we were limited on gcloud monitoring(Dashboard Kubernetes Engine) were we could see some monitoring metrics of our of Kubernetes nodes, pods and services. The given metrics which helped us to verify health and success of the application were CPU utilization, network usage and memory utilization. So we were able to see any  incidents and check the workload of the application on different time periods.<img src="/home/jaromir/Documents/PMS/documentation/monitoring1.JPG" alt="monitoring1" style="zoom: 50%;" />
 
-**Tenant: Invite workers**
+<img src="/home/jaromir/Documents/PMS/documentation/monitoring2.JPG" alt="monitoring2" style="zoom:67%;" />
 
-*As a Tenant I would like to invite workers to join the company's "worker group" and also have an overview of the invited workers status.*
+<div style="page-break-after: always;"></div>
 
-<u>Acceptance Criteria:</u>
+## Cost Calculation & Charging Model
 
-1. Text field to enter email addresses
-2. Invite button to send invitation to the entered email addresses
-3. A view of all workers as well as their invitation status, accepted or request pending.
+The running expenses of the application are the costs that we pay for the services being used from Google Cloud. The following table shows the resources being used and an almost precise estimate of their price.
 
----
+| Resource / Price     | per hour in € | per month in € |
+| -------------------- | ------------- | -------------- |
+| Virtual  Machine (3) | 0.034         | 24.48 (73.44)  |
+| External IP          | 0.004         | 2.88           |
+| Firestore            | -             | -              |
 
-**Tenant: Create job**
-*As a Tenant I would like to be able to create a new job listing., in order to add the job to the system as well as for the employees to be able to apply for the new job.*
-<u>Acceptance criteria:</u>
+The usage of Firestore resources is not billed on an hourly rate, but rather in the amount of storage used as well as the number of read, write, delete operations that are carried out. The price per GB of storage is 0.16€, 100,000 reads and writes cost 0.06€ and 0.18€ respectively. These numbers will fluctuate according to many different factors like, how many tenants are using the service, the number of employees each tenant has, the time of the year, etc. If we were to sum up the application's running cost, we'll roughly be around 80€/Month.
 
-1. Creating a job is done with the click of a button `Create Job`.
-   1. The ability to add the jobs title, location, description, start & end time, number of workers required.
-2. The ability to either `Save` or `Cancel` creating the job.
-3. The newly created job will appear in the list of jobs.
+To satisfy both large and small firms, we devised a charging model that we think is fair to both parties. Larger firms in turn will most likely have more employees and jobs (therefore the need to assign more workers to jobs per month) then smaller firms. With this in mind we created three packages for our tenants to choose from.
 
----
+* **Small**
+  * `1€ ` per user
+  * `30€` per `250` assignments
+* **Medium**
+  * `1€` per user
+  * `45€` per 500 assignments
+* **Large**
+  * `1€` per user
+  * `60€` per 750 assignments
 
-**Tenant: View and edit jobs**
-
-*As a Tenant I would like to see a list of all jobs, in order to have an overview of my company's jobs.*
-
-<u>Acceptance criteria:</u>
-
-1. A list view of all jobs.
-2. The ability to edit a job's information by clicking on the respective edit icon
-
----
-
-**Tenant: Delete Job Listing**
-
-*As a Tenant I would like to delete a job listing, so that employees can no longer apply for the job.*
-
-<u>Acceptance criteria:</u>
-
-1. The ability to check mark a job and delete it.
-2. The deleted job is no longer in the list of jobs.
-
----
-
-<img src="/home/jaromir/MSI/CAD/tenant.png" alt="tenant" style="zoom:50%;" />
-
----
-
-**Tenant: View and accept applicants**
-
-*As a Tenant I would like to see which employees applied for which job, so that i can create a team to partake in the job.*
-
-<u>Acceptance criteria:</u>
-
-1. Each row in the job listing gets a new field named `Members`
-   1. Example the field will show `5/7` meaning 5 people applied from needed 7 workers.
-2. When job is clicked, redirected to another page with the job's information and two lists with `applied` and `selected` workers.
-3. The ability to move the workers between both `applied` and `selected` workers list.
-
----
-
-**Employee: Join Tenant's PMS service, edit profile**
-
-*As an Employee I would like to accept my companies invite to use PMS's services, as well as to edit my profile information.*
-
-<u>Acceptance criteria:</u>
-
-1. Fill out profile information with name, address, phone number, insurance number
-2. View and edit profile information.
-
----
-
-**Employee: Available Job list**
-
-*As an Employee I would like to see a list of all available jobs my employing company currently has and the ability to click on them to see all the information, in order to apply for jobs.*
-
-<u>Acceptance criteria:</u>
-
-1. See a list of all available jobs under `Available jobs`.
-2. The ability to click on the job's title and see the full job's information.
-3. The ability to apply for a job with an `Apply` button.
-   1. This job will no longer be shown under the `Available jobs` list.
-
----
-
-**Employee: Applied Job list**
-
-*As an Employee I would like to see a list of all the jobs I applied to, in order to have a separate overview between all jobs and my applied jobs.*
-
-<u>Acceptance criteria:</u>
-
-1. A view `Applied Jobs`
-   1. This view contains all the jobs that were applied to in the `Available jobs` list section.
-2. The ability to cancel a job application with a `cancel` button.
-
----
-
-**Employee: Accepted Job list**
-
-*As an Employee I would like to see a list of all the jobs i got accepted to, in order to know my upcoming jobs.*
-
-<u>Acceptance criteria:</u>
-
-1. A view `Upcoming Jobs`.
-   1. View shows the upcoming jobs along with the jobs information.
-2. The ability to `cancel` a job application with a `cancel` button.
-
-## 
+Within each package, `1€` is charged for each user. The difference by the packages lies by the number of assignments one has per month. An `assignment` can be seen has a job done by an employee. So if 5 people are needed for one job, this results to 5 assignments. If a company has the need for more monthly assignments, then another price plan can be made to suite that company's needs.
