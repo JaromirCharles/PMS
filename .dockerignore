@@ -1,0 +1,7 @@
+# Ignoring certain files to be added to the docker image
+documentation
+.git
+node_modules
+notes.md
+.travis.yml
+.vscode

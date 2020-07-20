@@ -1,0 +1,18 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pms-client-deploy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pms-client
+  template:
+    metadata:
+      labels:
+        app: pms-client
+    spec:
+      containers:
+      - image: gcr.io/apt-momentum-279610/pms-client:v0.2
+        name: pms-client
+        imagePullPolicy: IfNotPresent

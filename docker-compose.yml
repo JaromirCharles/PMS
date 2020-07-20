@@ -1,0 +1,16 @@
+version: '3'
+services:
+  client:
+    build: 
+      dockerfile: Dockerfile
+      context: ./frontend
+    ports:
+      - '3000:3000'
+    links:
+      - server
+  server:
+    build:
+      dockerfile: Dockerfile
+      context: ./server
+    ports:
+      - '5000:5000'
