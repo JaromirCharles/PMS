@@ -103,13 +103,10 @@ Resources are shared whereby the application is accessible to all users under th
 
 To be able to meet the demands of all users a `Horizontal Pod Autoscaler` was created which targets the client deployment, periodically adjusting the number of replicas of the scale target to match the average CPU utilization which was specified to `80%`. For current production, a maximum of `5` replicas and a minimum of `1` replica has been set. The number of replicas will scale up when the user demands increase and also automatically scale down if the resources are no longer utilized by the consumers.
 
-***`Measured Service`*** ??? I DON'T THINK WE HAVE THIS
+***`Measured Service`***
 
-**Add if greater 80%**
+One key feature of google cloud platform are the measured services. We just pay what we consume. To optimize resource use we are able to automatically control the number of pods and so our computing resources as we described in *Rapid elasticity*. Google cloud monitoring provides us visibility into the performance, resource usage, computing resources, network usage, etc. 
 
-```
-Cloud systems automatically control and optimize resource use by leveraging a metering capability at some level of abstraction appropriate to the type of service (e.g., storage, processing, bandwidth and active user accounts). Resource usage can be monitored, controlled and reported, providing transparency for the provider and consumer.
-```
 
 #### Multi-user Multi-tenancy
 
