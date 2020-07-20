@@ -128,7 +128,7 @@ With docker we have created two `containers` which provide an isolated workspace
 
 We support `Micro-services` with Containers and Kubernetes. Frontend and backend are separated from each other. They can be upgraded, scaled and deployed independently. (see graph in chapter "Application Architecture&Design) Further services can be easily integrated in the application.  
 
-Our ``Continuous delivery`` approach starts by making sure that our code is always in a deployable state. That means that changes on code level are tested locally and reviewed. With Travis CI we ensure that all new code is automatically and consistently tested for errors. The next step is to automatically deploy every build into a production-like environment. In our case this process of automatically deployment is not yet configured, so that we have to do it manually with three commands (docker build, docker push and kubectl set image). 
+Our ``Continuous delivery`` approach starts by making sure that our code is always in a deployable state. That means that changes on code level are tested locally and reviewed.  The next step is to automatically deploy every build into a production-like environment. In our case this process of automatically deployment is not yet configured, so that we have to do it manually with three commands (docker build, docker push and kubectl set image). 
 
 Our ``DevOps`` approach is described in chapter Operations.
 
@@ -261,7 +261,7 @@ Since the DevOps approach is viewed as the collaboration between software develo
 
 For Agile development we tried to integrate Continuous Delivery practices which we already described in the chapter *Application Architecture & Design*.  So we created an environment where building, testing and releasing software happens rapidly and frequently to constantly delivering high-quality software.
 
-As a team of 2 developers, we utilized `GitHub` to manage the changes made to the source code as well as for collaboration.  For communication we used ``Slack`` (chatting,  sharing content) and ``Discord`` (talking and sharing knowledge).  With the continuous integration platform Travis CI we ensured that all new code is automatically and consistently tested for errors.  
+As a team of 2 developers, we utilized `GitHub` to manage the changes made to the source code as well as for collaboration.  For communication we used ``Slack`` (chatting,  sharing content) and ``Discord`` (talking and sharing knowledge).
 
 To keep track of what needs to be done within the project, we used GitHub project boards so that the team has an overview of what needs to be done, what is currently in progress, what needs to be reviewed and what has already been done.
 
